@@ -1,1483 +1,1092 @@
-;;;SWIG wrapper code starts here
-
-(in-package #:freeimage)
-
-
-(cl:defmacro defanonenum (&body enums)
-   "Converts anonymous enums to defconstants."
-  `(cl:progn ,@(cl:loop for value in enums
-                        for index = 0 then (cl:1+ index)
-                        when (cl:listp value) do (cl:setf index (cl:second value)
-                                                          value (cl:first value))
-                        collect `(cl:defconstant ,value ,index))))
-
-(cl:eval-when (:compile-toplevel :load-toplevel)
-  (cl:unless (cl:fboundp 'swig-lispify)
-    (cl:defun swig-lispify (name flag cl:&optional (package cl:*package*))
-      (cl:labels ((helper (lst last rest cl:&aux (c (cl:car lst)))
-                    (cl:cond
-                      ((cl:null lst)
-                       rest)
-                      ((cl:upper-case-p c)
-                       (helper (cl:cdr lst) 'upper
-                               (cl:case last
-                                 ((lower digit) (cl:list* c #\- rest))
-                                 (cl:t (cl:cons c rest)))))
-                      ((cl:lower-case-p c)
-                       (helper (cl:cdr lst) 'lower (cl:cons (cl:char-upcase c) rest)))
-                      ((cl:digit-char-p c)
-                       (helper (cl:cdr lst) 'digit 
-                               (cl:case last
-                                 ((upper lower) (cl:list* c #\- rest))
-                                 (cl:t (cl:cons c rest)))))
-                      ((cl:char-equal c #\_)
-                       (helper (cl:cdr lst) '_ (cl:cons #\- rest)))
-                      (cl:t
-                       (cl:error "Invalid character: ~A" c)))))
-        (cl:let ((fix (cl:case flag
-                        ((constant enumvalue) "+")
-                        (variable "*")
-                        (cl:t ""))))
-          (cl:intern
-           (cl:concatenate
-            'cl:string
-            fix
-            (cl:nreverse (helper (cl:concatenate 'cl:list name) cl:nil cl:nil))
-            fix)
-           package))))))
-
-;;;SWIG wrapper code ends here
-
-
-(cl:defconstant FREEIMAGE_MAJOR_VERSION 3)
+(IN-PACKAGE #:FREEIMAGE) 
 
-(cl:defconstant FREEIMAGE_MINOR_VERSION 13)
+(DEFMACRO DEFANONENUM (&BODY ENUMS)
+  "Converts anonymous enums to defconstants."
+  `(PROGN
+    ,@(LOOP FOR VALUE IN ENUMS FOR INDEX = 0 THEN (1+ INDEX) WHEN (LISTP VALUE)
+            DO (SETF INDEX (SECOND VALUE) VALUE (FIRST VALUE)) COLLECT
+            `(DEFCONSTANT ,VALUE ,INDEX)))) 
 
-(cl:defconstant FREEIMAGE_RELEASE_SERIAL 1)
+(EVAL-WHEN (:COMPILE-TOPLEVEL :LOAD-TOPLEVEL)
+  (UNLESS (FBOUNDP 'SWIG-LISPIFY)
+    (DEFUN SWIG-LISPIFY (NAME FLAG &OPTIONAL (PACKAGE *PACKAGE*))
+      (LABELS ((HELPER (LST LAST REST &AUX (C (CAR LST)))
+                 (COND ((NULL LST) REST)
+                       ((UPPER-CASE-P C)
+                        (HELPER (CDR LST) 'UPPER
+                         (CASE LAST
+                           ((LOWER DIGIT) (LIST* C #\- REST))
+                           (T (CONS C REST)))))
+                       ((LOWER-CASE-P C)
+                        (HELPER (CDR LST) 'LOWER (CONS (CHAR-UPCASE C) REST)))
+                       ((DIGIT-CHAR-P C)
+                        (HELPER (CDR LST) 'DIGIT
+                         (CASE LAST
+                           ((UPPER LOWER) (LIST* C #\- REST))
+                           (T (CONS C REST)))))
+                       ((CHAR-EQUAL C #\_)
+                        (HELPER (CDR LST) '_ (CONS #\- REST)))
+                       (T (ERROR "Invalid character: ~A" C)))))
+        (LET ((FIX
+               (CASE FLAG ((CONSTANT ENUMVALUE) "+") (VARIABLE "*") (T ""))))
+          (INTERN
+           (CONCATENATE 'STRING FIX
+                        (NREVERSE (HELPER (CONCATENATE 'LIST NAME) NIL NIL))
+                        FIX)
+           PACKAGE)))))) 
 
-(cl:defconstant FREEIMAGE_COLORORDER_BGR 0)
+(DEFCONSTANT FREEIMAGE-MAJOR-VERSION 3) 
 
-(cl:defconstant FREEIMAGE_COLORORDER_RGB 1)
+(DEFCONSTANT FREEIMAGE-MINOR-VERSION 13) 
 
-(cl:defconstant FREEIMAGE_COLORORDER 0)
+(DEFCONSTANT FREEIMAGE-RELEASE-SERIAL 1) 
 
-(cffi:defcstruct FIBITMAP
-	(data :pointer))
+(DEFCONSTANT FREEIMAGE-COLORORDER-BGR 0) 
 
-(cffi:defcstruct FIMULTIBITMAP
-	(data :pointer))
+(DEFCONSTANT FREEIMAGE-COLORORDER-RGB 1) 
 
-(cl:defconstant FALSE 0)
+(DEFCONSTANT FREEIMAGE-COLORORDER 0) 
 
-(cl:defconstant TRUE 1)
+(CFFI:DEFCSTRUCT FIBITMAP (DATA :POINTER)) 
 
-(cl:defconstant NULL 0)
+(CFFI:DEFCSTRUCT FIMULTIBITMAP (DATA :POINTER)) 
 
-(cl:defconstant SEEK_SET 0)
+(DEFCONSTANT FALSE 0) 
 
-(cl:defconstant SEEK_CUR 1)
+(DEFCONSTANT TRUE 1) 
 
-(cl:defconstant SEEK_END 2)
+(DEFCONSTANT NULL 0) 
 
-(cffi:defcstruct RGBQUAD
-	(rgbBlue :pointer)
-	(rgbGreen :pointer)
-	(rgbRed :pointer)
-	(rgbReserved :pointer))
+(DEFCONSTANT SEEK-SET 0) 
 
-(cffi:defcstruct RGBTRIPLE
-	(rgbtBlue :pointer)
-	(rgbtGreen :pointer)
-	(rgbtRed :pointer))
+(DEFCONSTANT SEEK-CUR 1) 
 
-(cffi:defcstruct BITMAPINFOHEADER
-	(biSize :pointer)
-	(biWidth :pointer)
-	(biHeight :pointer)
-	(biPlanes :pointer)
-	(biBitCount :pointer)
-	(biCompression :pointer)
-	(biSizeImage :pointer)
-	(biXPelsPerMeter :pointer)
-	(biYPelsPerMeter :pointer)
-	(biClrUsed :pointer)
-	(biClrImportant :pointer))
+(DEFCONSTANT SEEK-END 2) 
 
-(cffi:defcstruct BITMAPINFO
-	(bmiHeader BITMAPINFOHEADER)
-	(bmiColors :pointer))
+(CFFI:DEFCSTRUCT RGBQUAD (RGBBLUE :POINTER) (RGBGREEN :POINTER)
+                 (RGBRED :POINTER) (RGBRESERVED :POINTER)) 
 
-(cffi:defcstruct FIRGB16
-	(red :pointer)
-	(green :pointer)
-	(blue :pointer))
+(CFFI:DEFCSTRUCT RGBTRIPLE (RGBTBLUE :POINTER) (RGBTGREEN :POINTER)
+                 (RGBTRED :POINTER)) 
 
-(cffi:defcstruct FIRGBA16
-	(red :pointer)
-	(green :pointer)
-	(blue :pointer)
-	(alpha :pointer))
+(CFFI:DEFCSTRUCT BITMAPINFOHEADER (BISIZE :POINTER) (BIWIDTH :POINTER)
+                 (BIHEIGHT :POINTER) (BIPLANES :POINTER) (BIBITCOUNT :POINTER)
+                 (BICOMPRESSION :POINTER) (BISIZEIMAGE :POINTER)
+                 (BIXPELSPERMETER :POINTER) (BIYPELSPERMETER :POINTER)
+                 (BICLRUSED :POINTER) (BICLRIMPORTANT :POINTER)) 
 
-(cffi:defcstruct FIRGBF
-	(red :float)
-	(green :float)
-	(blue :float))
+(CFFI:DEFCSTRUCT BITMAPINFO (BMIHEADER BITMAPINFOHEADER) (BMICOLORS :POINTER)) 
 
-(cffi:defcstruct FIRGBAF
-	(red :float)
-	(green :float)
-	(blue :float)
-	(alpha :float))
+(CFFI:DEFCSTRUCT FIRGB16 (RED :POINTER) (GREEN :POINTER) (BLUE :POINTER)) 
 
-(cffi:defcstruct FICOMPLEX
-	(r :double)
-	(i :double))
+(CFFI:DEFCSTRUCT FIRGBA16 (RED :POINTER) (GREEN :POINTER) (BLUE :POINTER)
+                 (ALPHA :POINTER)) 
 
-(cl:defconstant FI_RGBA_RED 2)
+(CFFI:DEFCSTRUCT FIRGBF (RED :FLOAT) (GREEN :FLOAT) (BLUE :FLOAT)) 
 
-(cl:defconstant FI_RGBA_GREEN 1)
+(CFFI:DEFCSTRUCT FIRGBAF (RED :FLOAT) (GREEN :FLOAT) (BLUE :FLOAT)
+                 (ALPHA :FLOAT)) 
 
-(cl:defconstant FI_RGBA_BLUE 0)
+(CFFI:DEFCSTRUCT FICOMPLEX (R :DOUBLE) (I :DOUBLE)) 
 
-(cl:defconstant FI_RGBA_ALPHA 3)
+(DEFCONSTANT FI-RGBA-RED 2) 
 
-(cl:defconstant FI_RGBA_RED_MASK #x00FF0000)
+(DEFCONSTANT FI-RGBA-GREEN 1) 
 
-(cl:defconstant FI_RGBA_GREEN_MASK #x0000FF00)
+(DEFCONSTANT FI-RGBA-BLUE 0) 
 
-(cl:defconstant FI_RGBA_BLUE_MASK #x000000FF)
+(DEFCONSTANT FI-RGBA-ALPHA 3) 
 
-(cl:defconstant FI_RGBA_ALPHA_MASK #xFF000000)
+(DEFCONSTANT FI-RGBA-RED-MASK 16711680) 
 
-(cl:defconstant FI_RGBA_RED_SHIFT 16)
+(DEFCONSTANT FI-RGBA-GREEN-MASK 65280) 
 
-(cl:defconstant FI_RGBA_GREEN_SHIFT 8)
+(DEFCONSTANT FI-RGBA-BLUE-MASK 255) 
 
-(cl:defconstant FI_RGBA_BLUE_SHIFT 0)
+(DEFCONSTANT FI-RGBA-ALPHA-MASK 4278190080) 
 
-(cl:defconstant FI_RGBA_ALPHA_SHIFT 24)
+(DEFCONSTANT FI-RGBA-RED-SHIFT 16) 
 
-(cl:defconstant FI_RGBA_RGB_MASK (cl:logior #x00FF0000 #x0000FF00 #x000000FF))
+(DEFCONSTANT FI-RGBA-GREEN-SHIFT 8) 
 
-(cl:defconstant FI16_555_RED_MASK #x7C00)
+(DEFCONSTANT FI-RGBA-BLUE-SHIFT 0) 
 
-(cl:defconstant FI16_555_GREEN_MASK #x03E0)
+(DEFCONSTANT FI-RGBA-ALPHA-SHIFT 24) 
 
-(cl:defconstant FI16_555_BLUE_MASK #x001F)
+(DEFCONSTANT FI-RGBA-RGB-MASK (LOGIOR 16711680 65280 255)) 
 
-(cl:defconstant FI16_555_RED_SHIFT 10)
+(DEFCONSTANT FI16-555-RED-MASK 31744) 
 
-(cl:defconstant FI16_555_GREEN_SHIFT 5)
+(DEFCONSTANT FI16-555-GREEN-MASK 992) 
 
-(cl:defconstant FI16_555_BLUE_SHIFT 0)
+(DEFCONSTANT FI16-555-BLUE-MASK 31) 
 
-(cl:defconstant FI16_565_RED_MASK #xF800)
+(DEFCONSTANT FI16-555-RED-SHIFT 10) 
 
-(cl:defconstant FI16_565_GREEN_MASK #x07E0)
+(DEFCONSTANT FI16-555-GREEN-SHIFT 5) 
 
-(cl:defconstant FI16_565_BLUE_MASK #x001F)
+(DEFCONSTANT FI16-555-BLUE-SHIFT 0) 
 
-(cl:defconstant FI16_565_RED_SHIFT 11)
+(DEFCONSTANT FI16-565-RED-MASK 63488) 
 
-(cl:defconstant FI16_565_GREEN_SHIFT 5)
+(DEFCONSTANT FI16-565-GREEN-MASK 2016) 
 
-(cl:defconstant FI16_565_BLUE_SHIFT 0)
+(DEFCONSTANT FI16-565-BLUE-MASK 31) 
 
-(cl:defconstant FIICC_DEFAULT #x00)
+(DEFCONSTANT FI16-565-RED-SHIFT 11) 
 
-(cl:defconstant FIICC_COLOR_IS_CMYK #x01)
+(DEFCONSTANT FI16-565-GREEN-SHIFT 5) 
 
-(cffi:defcstruct FIICCPROFILE
-	(flags :pointer)
-	(size :pointer)
-	(data :pointer))
+(DEFCONSTANT FI16-565-BLUE-SHIFT 0) 
 
-(cffi:defcstruct FIMETADATA
-	(data :pointer))
+(DEFCONSTANT FIICC-DEFAULT 0) 
 
-(cffi:defcstruct FITAG
-	(data :pointer))
+(DEFCONSTANT FIICC-COLOR-IS-CMYK 1) 
 
-(cffi:defcstruct FreeImageIO
-	(read_proc :pointer)
-	(write_proc :pointer)
-	(seek_proc :pointer)
-	(tell_proc :pointer))
+(CFFI:DEFCSTRUCT FIICCPROFILE (FLAGS :POINTER) (SIZE :POINTER) (DATA :POINTER)) 
 
-(cffi:defcstruct FIMEMORY
-	(data :pointer))
+(CFFI:DEFCSTRUCT FIMETADATA (DATA :POINTER)) 
 
-(cffi:defcstruct Plugin
-	(format_proc :pointer)
-	(description_proc :pointer)
-	(extension_proc :pointer)
-	(regexpr_proc :pointer)
-	(open_proc :pointer)
-	(close_proc :pointer)
-	(pagecount_proc :pointer)
-	(pagecapability_proc :pointer)
-	(load_proc :pointer)
-	(save_proc :pointer)
-	(validate_proc :pointer)
-	(mime_proc :pointer)
-	(supports_export_bpp_proc :pointer)
-	(supports_export_type_proc :pointer)
-	(supports_icc_profiles_proc :pointer))
+(CFFI:DEFCSTRUCT FITAG (DATA :POINTER)) 
 
-(cl:defconstant BMP_DEFAULT 0)
+(CFFI:DEFCSTRUCT FREEIMAGEIO (READ_PROC :POINTER) (WRITE_PROC :POINTER)
+                 (SEEK_PROC :POINTER) (TELL_PROC :POINTER)) 
 
-(cl:defconstant BMP_SAVE_RLE 1)
+(CFFI:DEFCSTRUCT FIMEMORY (DATA :POINTER)) 
 
-(cl:defconstant CUT_DEFAULT 0)
+(CFFI:DEFCSTRUCT PLUGIN (FORMAT_PROC :POINTER) (DESCRIPTION_PROC :POINTER)
+                 (EXTENSION_PROC :POINTER) (REGEXPR_PROC :POINTER)
+                 (OPEN_PROC :POINTER) (CLOSE_PROC :POINTER)
+                 (PAGECOUNT_PROC :POINTER) (PAGECAPABILITY_PROC :POINTER)
+                 (LOAD_PROC :POINTER) (SAVE_PROC :POINTER)
+                 (VALIDATE_PROC :POINTER) (MIME_PROC :POINTER)
+                 (SUPPORTS_EXPORT_BPP_PROC :POINTER)
+                 (SUPPORTS_EXPORT_TYPE_PROC :POINTER)
+                 (SUPPORTS_ICC_PROFILES_PROC :POINTER)) 
 
-(cl:defconstant DDS_DEFAULT 0)
+(DEFCONSTANT BMP-DEFAULT 0) 
 
-(cl:defconstant EXR_DEFAULT 0)
+(DEFCONSTANT BMP-SAVE-RLE 1) 
 
-(cl:defconstant EXR_FLOAT #x0001)
+(DEFCONSTANT CUT-DEFAULT 0) 
 
-(cl:defconstant EXR_NONE #x0002)
+(DEFCONSTANT DDS-DEFAULT 0) 
 
-(cl:defconstant EXR_ZIP #x0004)
+(DEFCONSTANT EXR-DEFAULT 0) 
 
-(cl:defconstant EXR_PIZ #x0008)
+(DEFCONSTANT EXR-FLOAT 1) 
 
-(cl:defconstant EXR_PXR24 #x0010)
+(DEFCONSTANT EXR-NONE 2) 
 
-(cl:defconstant EXR_B44 #x0020)
+(DEFCONSTANT EXR-ZIP 4) 
 
-(cl:defconstant EXR_LC #x0040)
+(DEFCONSTANT EXR-PIZ 8) 
 
-(cl:defconstant FAXG3_DEFAULT 0)
+(DEFCONSTANT EXR-PXR24 16) 
 
-(cl:defconstant GIF_DEFAULT 0)
+(DEFCONSTANT EXR-B44 32) 
 
-(cl:defconstant GIF_LOAD256 1)
+(DEFCONSTANT EXR-LC 64) 
 
-(cl:defconstant GIF_PLAYBACK 2)
+(DEFCONSTANT FAXG3-DEFAULT 0) 
 
-(cl:defconstant HDR_DEFAULT 0)
+(DEFCONSTANT GIF-DEFAULT 0) 
 
-(cl:defconstant ICO_DEFAULT 0)
+(DEFCONSTANT GIF-LOAD256 1) 
 
-(cl:defconstant ICO_MAKEALPHA 1)
+(DEFCONSTANT GIF-PLAYBACK 2) 
 
-(cl:defconstant IFF_DEFAULT 0)
+(DEFCONSTANT HDR-DEFAULT 0) 
 
-(cl:defconstant J2K_DEFAULT 0)
+(DEFCONSTANT ICO-DEFAULT 0) 
 
-(cl:defconstant JP2_DEFAULT 0)
+(DEFCONSTANT ICO-MAKEALPHA 1) 
 
-(cl:defconstant JPEG_DEFAULT 0)
+(DEFCONSTANT IFF-DEFAULT 0) 
 
-(cl:defconstant JPEG_FAST #x0001)
+(DEFCONSTANT J2K-DEFAULT 0) 
 
-(cl:defconstant JPEG_ACCURATE #x0002)
+(DEFCONSTANT JP2-DEFAULT 0) 
 
-(cl:defconstant JPEG_CMYK #x0004)
+(DEFCONSTANT JPEG-DEFAULT 0) 
 
-(cl:defconstant JPEG_EXIFROTATE #x0008)
+(DEFCONSTANT JPEG-FAST 1) 
 
-(cl:defconstant JPEG_QUALITYSUPERB #x80)
+(DEFCONSTANT JPEG-ACCURATE 2) 
 
-(cl:defconstant JPEG_QUALITYGOOD #x0100)
+(DEFCONSTANT JPEG-CMYK 4) 
 
-(cl:defconstant JPEG_QUALITYNORMAL #x0200)
+(DEFCONSTANT JPEG-EXIFROTATE 8) 
 
-(cl:defconstant JPEG_QUALITYAVERAGE #x0400)
+(DEFCONSTANT JPEG-QUALITYSUPERB 128) 
 
-(cl:defconstant JPEG_QUALITYBAD #x0800)
+(DEFCONSTANT JPEG-QUALITYGOOD 256) 
 
-(cl:defconstant JPEG_PROGRESSIVE #x2000)
+(DEFCONSTANT JPEG-QUALITYNORMAL 512) 
 
-(cl:defconstant JPEG_SUBSAMPLING_411 #x1000)
+(DEFCONSTANT JPEG-QUALITYAVERAGE 1024) 
 
-(cl:defconstant JPEG_SUBSAMPLING_420 #x4000)
+(DEFCONSTANT JPEG-QUALITYBAD 2048) 
 
-(cl:defconstant JPEG_SUBSAMPLING_422 #x8000)
+(DEFCONSTANT JPEG-PROGRESSIVE 8192) 
 
-(cl:defconstant JPEG_SUBSAMPLING_444 #x10000)
+(DEFCONSTANT JPEG-SUBSAMPLING-411 4096) 
 
-(cl:defconstant KOALA_DEFAULT 0)
+(DEFCONSTANT JPEG-SUBSAMPLING-420 16384) 
 
-(cl:defconstant LBM_DEFAULT 0)
+(DEFCONSTANT JPEG-SUBSAMPLING-422 32768) 
 
-(cl:defconstant MNG_DEFAULT 0)
+(DEFCONSTANT JPEG-SUBSAMPLING-444 65536) 
 
-(cl:defconstant PCD_DEFAULT 0)
+(DEFCONSTANT KOALA-DEFAULT 0) 
 
-(cl:defconstant PCD_BASE 1)
+(DEFCONSTANT LBM-DEFAULT 0) 
 
-(cl:defconstant PCD_BASEDIV4 2)
+(DEFCONSTANT MNG-DEFAULT 0) 
 
-(cl:defconstant PCD_BASEDIV16 3)
+(DEFCONSTANT PCD-DEFAULT 0) 
 
-(cl:defconstant PCX_DEFAULT 0)
+(DEFCONSTANT PCD-BASE 1) 
 
-(cl:defconstant PFM_DEFAULT 0)
+(DEFCONSTANT PCD-BASEDIV4 2) 
 
-(cl:defconstant PICT_DEFAULT 0)
+(DEFCONSTANT PCD-BASEDIV16 3) 
 
-(cl:defconstant PNG_DEFAULT 0)
+(DEFCONSTANT PCX-DEFAULT 0) 
 
-(cl:defconstant PNG_IGNOREGAMMA 1)
+(DEFCONSTANT PFM-DEFAULT 0) 
 
-(cl:defconstant PNG_Z_BEST_SPEED #x0001)
+(DEFCONSTANT PICT-DEFAULT 0) 
 
-(cl:defconstant PNG_Z_DEFAULT_COMPRESSION #x0006)
+(DEFCONSTANT PNG-DEFAULT 0) 
 
-(cl:defconstant PNG_Z_BEST_COMPRESSION #x0009)
+(DEFCONSTANT PNG-IGNOREGAMMA 1) 
 
-(cl:defconstant PNG_Z_NO_COMPRESSION #x0100)
+(DEFCONSTANT PNG-Z-BEST-SPEED 1) 
 
-(cl:defconstant PNG_INTERLACED #x0200)
+(DEFCONSTANT PNG-Z-DEFAULT-COMPRESSION 6) 
 
-(cl:defconstant PNM_DEFAULT 0)
+(DEFCONSTANT PNG-Z-BEST-COMPRESSION 9) 
 
-(cl:defconstant PNM_SAVE_RAW 0)
+(DEFCONSTANT PNG-Z-NO-COMPRESSION 256) 
 
-(cl:defconstant PNM_SAVE_ASCII 1)
+(DEFCONSTANT PNG-INTERLACED 512) 
 
-(cl:defconstant PSD_DEFAULT 0)
+(DEFCONSTANT PNM-DEFAULT 0) 
 
-(cl:defconstant RAS_DEFAULT 0)
+(DEFCONSTANT PNM-SAVE-RAW 0) 
 
-(cl:defconstant RAW_DEFAULT 0)
+(DEFCONSTANT PNM-SAVE-ASCII 1) 
 
-(cl:defconstant RAW_PREVIEW 1)
+(DEFCONSTANT PSD-DEFAULT 0) 
 
-(cl:defconstant RAW_DISPLAY 2)
+(DEFCONSTANT RAS-DEFAULT 0) 
 
-(cl:defconstant SGI_DEFAULT 0)
+(DEFCONSTANT RAW-DEFAULT 0) 
 
-(cl:defconstant TARGA_DEFAULT 0)
+(DEFCONSTANT RAW-PREVIEW 1) 
 
-(cl:defconstant TARGA_LOAD_RGB888 1)
+(DEFCONSTANT RAW-DISPLAY 2) 
 
-(cl:defconstant TIFF_DEFAULT 0)
+(DEFCONSTANT SGI-DEFAULT 0) 
 
-(cl:defconstant TIFF_CMYK #x0001)
+(DEFCONSTANT TARGA-DEFAULT 0) 
 
-(cl:defconstant TIFF_PACKBITS #x0100)
+(DEFCONSTANT TARGA-LOAD-RGB888 1) 
 
-(cl:defconstant TIFF_DEFLATE #x0200)
+(DEFCONSTANT TIFF-DEFAULT 0) 
 
-(cl:defconstant TIFF_ADOBE_DEFLATE #x0400)
+(DEFCONSTANT TIFF-CMYK 1) 
 
-(cl:defconstant TIFF_NONE #x0800)
+(DEFCONSTANT TIFF-PACKBITS 256) 
 
-(cl:defconstant TIFF_CCITTFAX3 #x1000)
+(DEFCONSTANT TIFF-DEFLATE 512) 
 
-(cl:defconstant TIFF_CCITTFAX4 #x2000)
+(DEFCONSTANT TIFF-ADOBE-DEFLATE 1024) 
 
-(cl:defconstant TIFF_LZW #x4000)
+(DEFCONSTANT TIFF-NONE 2048) 
 
-(cl:defconstant TIFF_JPEG #x8000)
+(DEFCONSTANT TIFF-CCITTFAX3 4096) 
 
-(cl:defconstant WBMP_DEFAULT 0)
+(DEFCONSTANT TIFF-CCITTFAX4 8192) 
 
-(cl:defconstant XBM_DEFAULT 0)
+(DEFCONSTANT TIFF-LZW 16384) 
 
-(cl:defconstant XPM_DEFAULT 0)
+(DEFCONSTANT TIFF-JPEG 32768) 
 
-(cl:defconstant FI_COLOR_IS_RGB_COLOR #x00)
+(DEFCONSTANT WBMP-DEFAULT 0) 
 
-(cl:defconstant FI_COLOR_IS_RGBA_COLOR #x01)
+(DEFCONSTANT XBM-DEFAULT 0) 
 
-(cl:defconstant FI_COLOR_FIND_EQUAL_COLOR #x02)
+(DEFCONSTANT XPM-DEFAULT 0) 
 
-(cl:defconstant FI_COLOR_ALPHA_IS_INDEX #x04)
+(DEFCONSTANT FI-COLOR-IS-RGB-COLOR 0) 
 
-(cl:defconstant FI_COLOR_PALETTE_SEARCH_MASK (cl:logior #x02 #x04))
+(DEFCONSTANT FI-COLOR-IS-RGBA-COLOR 1) 
 
-(cffi:defcenum FREE-IMAGE-FORMAT
-	   (:FIF-UNKNOWN -1)
-	   (:FIF-BMP 0)
-	   (:FIF-ICO 1)
-	   (:FIF-JPEG 2)
-	   (:FIF-JNG 3)
-	   (:FIF-KOALA 4)
-	   (:FIF-LBM 5)
-	   (:FIF-IFF 5)
-	   (:FIF-MNG 6)
-	   (:FIF-PBM 7)
-	   (:FIF-PBMRAW 8)
-	   (:FIF-PCD 9)
-	   (:FIF-PCX 10)
-	   (:FIF-PGM 11)
-	   (:FIF-PGMRAW 12)
-	   (:FIF-PNG 13)
-	   (:FIF-PPM 14)
-	   (:FIF-PPMRAW 15)
-	   (:FIF-RAS 16)
-	   (:FIF-TARGA 17)
-	   (:FIF-TIFF 18)
-	   (:FIF-WBMP 19)
-	   (:FIF-PSD 20)
-	   (:FIF-CUT 21)
-	   (:FIF-XBM 22)
-	   (:FIF-XPM 23)
-	   (:FIF-DDS 24)
-	   (:FIF-GIF 25)
-	   (:FIF-HDR 26)
-	   (:FIF-FAXG3 27)
-	   (:FIF-SGI 28)
-	   (:FIF-EXR 29)
-	   (:FIF-J2K 30)
-	   (:FIF-JP2 31)
-	   (:FIF-PFM 32)
-	   (:FIF-PICT 33)
-	   (:FIF-RAW 34))
+(DEFCONSTANT FI-COLOR-FIND-EQUAL-COLOR 2) 
 
-(cffi:defcfun ("FreeImage_Initialise" FreeImage_Initialise) :void
-  (load_local_plugins_only :pointer))
+(DEFCONSTANT FI-COLOR-ALPHA-IS-INDEX 4) 
 
-(cffi:defcfun ("FreeImage_DeInitialise" FreeImage_DeInitialise) :void)
+(DEFCONSTANT FI-COLOR-PALETTE-SEARCH-MASK (LOGIOR 2 4)) 
 
-(cffi:defcfun ("FreeImage_GetVersion" FreeImage_GetVersion) :string)
+(CFFI:DEFCENUM FREE-IMAGE-FORMAT (:FIF-UNKNOWN -1) (:FIF-BMP 0) (:FIF-ICO 1)
+               (:FIF-JPEG 2) (:FIF-JNG 3) (:FIF-KOALA 4) (:FIF-LBM 5)
+               (:FIF-IFF 5) (:FIF-MNG 6) (:FIF-PBM 7) (:FIF-PBMRAW 8)
+               (:FIF-PCD 9) (:FIF-PCX 10) (:FIF-PGM 11) (:FIF-PGMRAW 12)
+               (:FIF-PNG 13) (:FIF-PPM 14) (:FIF-PPMRAW 15) (:FIF-RAS 16)
+               (:FIF-TARGA 17) (:FIF-TIFF 18) (:FIF-WBMP 19) (:FIF-PSD 20)
+               (:FIF-CUT 21) (:FIF-XBM 22) (:FIF-XPM 23) (:FIF-DDS 24)
+               (:FIF-GIF 25) (:FIF-HDR 26) (:FIF-FAXG3 27) (:FIF-SGI 28)
+               (:FIF-EXR 29) (:FIF-J2K 30) (:FIF-JP2 31) (:FIF-PFM 32)
+               (:FIF-PICT 33) (:FIF-RAW 34)) 
 
-(cffi:defcfun ("FreeImage_GetCopyrightMessage" FreeImage_GetCopyrightMessage) :string)
+(CFFI:DEFCFUN ("FreeImage_Initialise" FREEIMAGE-INITIALISE) :VOID
+              (LOAD_LOCAL_PLUGINS_ONLY :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetOutputMessageStdCall" FreeImage_SetOutputMessageStdCall) :void
-  (omf :pointer))
+(CFFI:DEFCFUN ("FreeImage_DeInitialise" FREEIMAGE-DEINITIALISE) :VOID) 
 
-(cffi:defcfun ("FreeImage_SetOutputMessage" FreeImage_SetOutputMessage) :void
-  (omf :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetVersion" FREEIMAGE-GETVERSION) :STRING) 
 
-(cffi:defcfun ("FreeImage_OutputMessageProc" FreeImage_OutputMessageProc) :void
-  (fif :int)
-  (fmt :string)
-  &rest)
+(CFFI:DEFCFUN ("FreeImage_GetCopyrightMessage" FREEIMAGE-GETCOPYRIGHTMESSAGE)
+              :STRING) 
 
-(cffi:defcfun ("FreeImage_Allocate" FreeImage_Allocate) :pointer
-  (width :int)
-  (height :int)
-  (bpp :int)
-  (red_mask :unsigned-int)
-  (green_mask :unsigned-int)
-  (blue_mask :unsigned-int))
+(CFFI:DEFCFUN
+ ("FreeImage_SetOutputMessageStdCall" FREEIMAGE-SETOUTPUTMESSAGESTDCALL) :VOID
+ (OMF :POINTER)) 
 
-(cffi:defcfun ("FreeImage_AllocateT" FreeImage_AllocateT) :pointer
-  (type :int)
-  (width :int)
-  (height :int)
-  (bpp :int)
-  (red_mask :unsigned-int)
-  (green_mask :unsigned-int)
-  (blue_mask :unsigned-int))
+(CFFI:DEFCFUN ("FreeImage_SetOutputMessage" FREEIMAGE-SETOUTPUTMESSAGE) :VOID
+              (OMF :POINTER)) 
 
-(cffi:defcfun ("FreeImage_Clone" FreeImage_Clone) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_OutputMessageProc" FREEIMAGE-OUTPUTMESSAGEPROC) :VOID
+              (FIF :INT) (FMT :STRING) &REST) 
 
-(cffi:defcfun ("FreeImage_Unload" FreeImage_Unload) :void
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_Allocate" FREEIMAGE-ALLOCATE) :POINTER (WIDTH :INT)
+              (HEIGHT :INT) (BPP :INT) (RED_MASK :UNSIGNED-INT)
+              (GREEN_MASK :UNSIGNED-INT) (BLUE_MASK :UNSIGNED-INT)) 
 
-(cffi:defcfun ("FreeImage_Load" FreeImage_Load) :pointer
-  (fif FREE-IMAGE-FORMAT)
-  (filename :string)
-  (flags :int))
+(CFFI:DEFCFUN ("FreeImage_AllocateT" FREEIMAGE-ALLOCATET) :POINTER (TYPE :INT)
+              (WIDTH :INT) (HEIGHT :INT) (BPP :INT) (RED_MASK :UNSIGNED-INT)
+              (GREEN_MASK :UNSIGNED-INT) (BLUE_MASK :UNSIGNED-INT)) 
 
-(cffi:defcfun ("FreeImage_LoadU" FreeImage_LoadU) :pointer
-  (fif :int)
-  (filename :pointer)
-  (flags :int))
+(CFFI:DEFCFUN ("FreeImage_Clone" FREEIMAGE-CLONE) :POINTER (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_LoadFromHandle" FreeImage_LoadFromHandle) :pointer
-  (fif :int)
-  (io :pointer)
-  (handle :pointer)
-  (flags :int))
+(CFFI:DEFCFUN ("FreeImage_Unload" FREEIMAGE-UNLOAD) :VOID (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_Save" FreeImage_Save) :pointer
-  (fif :int)
-  (dib :pointer)
-  (filename :string)
-  (flags :int))
+(CFFI:DEFCFUN ("FreeImage_Load" FREEIMAGE-LOAD) :POINTER
+              (FIF FREE-IMAGE-FORMAT) (FILENAME :STRING) (FLAGS :INT)) 
 
-(cffi:defcfun ("FreeImage_SaveU" FreeImage_SaveU) :pointer
-  (fif :int)
-  (dib :pointer)
-  (filename :pointer)
-  (flags :int))
+(CFFI:DEFCFUN ("FreeImage_LoadU" FREEIMAGE-LOADU) :POINTER (FIF :INT)
+              (FILENAME :POINTER) (FLAGS :INT)) 
 
-(cffi:defcfun ("FreeImage_SaveToHandle" FreeImage_SaveToHandle) :pointer
-  (fif :int)
-  (dib :pointer)
-  (io :pointer)
-  (handle :pointer)
-  (flags :int))
+(CFFI:DEFCFUN ("FreeImage_LoadFromHandle" FREEIMAGE-LOADFROMHANDLE) :POINTER
+              (FIF :INT) (IO :POINTER) (HANDLE :POINTER) (FLAGS :INT)) 
 
-(cffi:defcfun ("FreeImage_OpenMemory" FreeImage_OpenMemory) :pointer
-  (data :pointer)
-  (size_in_bytes :pointer))
+(CFFI:DEFCFUN ("FreeImage_Save" FREEIMAGE-SAVE) :POINTER (FIF :INT)
+              (DIB :POINTER) (FILENAME :STRING) (FLAGS :INT)) 
 
-(cffi:defcfun ("FreeImage_CloseMemory" FreeImage_CloseMemory) :void
-  (stream :pointer))
+(CFFI:DEFCFUN ("FreeImage_SaveU" FREEIMAGE-SAVEU) :POINTER (FIF :INT)
+              (DIB :POINTER) (FILENAME :POINTER) (FLAGS :INT)) 
 
-(cffi:defcfun ("FreeImage_LoadFromMemory" FreeImage_LoadFromMemory) :pointer
-  (fif :int)
-  (stream :pointer)
-  (flags :int))
+(CFFI:DEFCFUN ("FreeImage_SaveToHandle" FREEIMAGE-SAVETOHANDLE) :POINTER
+              (FIF :INT) (DIB :POINTER) (IO :POINTER) (HANDLE :POINTER)
+              (FLAGS :INT)) 
 
-(cffi:defcfun ("FreeImage_SaveToMemory" FreeImage_SaveToMemory) :pointer
-  (fif :int)
-  (dib :pointer)
-  (stream :pointer)
-  (flags :int))
+(CFFI:DEFCFUN ("FreeImage_OpenMemory" FREEIMAGE-OPENMEMORY) :POINTER
+              (DATA :POINTER) (SIZE_IN_BYTES :POINTER)) 
 
-(cffi:defcfun ("FreeImage_TellMemory" FreeImage_TellMemory) :long
-  (stream :pointer))
+(CFFI:DEFCFUN ("FreeImage_CloseMemory" FREEIMAGE-CLOSEMEMORY) :VOID
+              (STREAM :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SeekMemory" FreeImage_SeekMemory) :pointer
-  (stream :pointer)
-  (offset :long)
-  (origin :int))
+(CFFI:DEFCFUN ("FreeImage_LoadFromMemory" FREEIMAGE-LOADFROMMEMORY) :POINTER
+              (FIF :INT) (STREAM :POINTER) (FLAGS :INT)) 
 
-(cffi:defcfun ("FreeImage_AcquireMemory" FreeImage_AcquireMemory) :pointer
-  (stream :pointer)
-  (data :pointer)
-  (size_in_bytes :pointer))
+(CFFI:DEFCFUN ("FreeImage_SaveToMemory" FREEIMAGE-SAVETOMEMORY) :POINTER
+              (FIF :INT) (DIB :POINTER) (STREAM :POINTER) (FLAGS :INT)) 
 
-(cffi:defcfun ("FreeImage_ReadMemory" FreeImage_ReadMemory) :unsigned-int
-  (buffer :pointer)
-  (size :unsigned-int)
-  (count :unsigned-int)
-  (stream :pointer))
+(CFFI:DEFCFUN ("FreeImage_TellMemory" FREEIMAGE-TELLMEMORY) :LONG
+              (STREAM :POINTER)) 
 
-(cffi:defcfun ("FreeImage_WriteMemory" FreeImage_WriteMemory) :unsigned-int
-  (buffer :pointer)
-  (size :unsigned-int)
-  (count :unsigned-int)
-  (stream :pointer))
+(CFFI:DEFCFUN ("FreeImage_SeekMemory" FREEIMAGE-SEEKMEMORY) :POINTER
+              (STREAM :POINTER) (OFFSET :LONG) (ORIGIN :INT)) 
 
-(cffi:defcfun ("FreeImage_LoadMultiBitmapFromMemory" FreeImage_LoadMultiBitmapFromMemory) :pointer
-  (fif :int)
-  (stream :pointer)
-  (flags :int))
+(CFFI:DEFCFUN ("FreeImage_AcquireMemory" FREEIMAGE-ACQUIREMEMORY) :POINTER
+              (STREAM :POINTER) (DATA :POINTER) (SIZE_IN_BYTES :POINTER)) 
 
-(cffi:defcfun ("FreeImage_RegisterLocalPlugin" FreeImage_RegisterLocalPlugin) :int
-  (proc_address :pointer)
-  (format :string)
-  (description :string)
-  (extension :string)
-  (regexpr :string))
+(CFFI:DEFCFUN ("FreeImage_ReadMemory" FREEIMAGE-READMEMORY) :UNSIGNED-INT
+              (BUFFER :POINTER) (SIZE :UNSIGNED-INT) (COUNT :UNSIGNED-INT)
+              (STREAM :POINTER)) 
 
-(cffi:defcfun ("FreeImage_RegisterExternalPlugin" FreeImage_RegisterExternalPlugin) :int
-  (path :string)
-  (format :string)
-  (description :string)
-  (extension :string)
-  (regexpr :string))
+(CFFI:DEFCFUN ("FreeImage_WriteMemory" FREEIMAGE-WRITEMEMORY) :UNSIGNED-INT
+              (BUFFER :POINTER) (SIZE :UNSIGNED-INT) (COUNT :UNSIGNED-INT)
+              (STREAM :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetFIFCount" FreeImage_GetFIFCount) :int)
+(CFFI:DEFCFUN
+ ("FreeImage_LoadMultiBitmapFromMemory" FREEIMAGE-LOADMULTIBITMAPFROMMEMORY)
+ :POINTER (FIF :INT) (STREAM :POINTER) (FLAGS :INT)) 
 
-(cffi:defcfun ("FreeImage_SetPluginEnabled" FreeImage_SetPluginEnabled) :int
-  (fif :int)
-  (enable :pointer))
+(CFFI:DEFCFUN ("FreeImage_RegisterLocalPlugin" FREEIMAGE-REGISTERLOCALPLUGIN)
+              :INT (PROC_ADDRESS :POINTER) (FORMAT :STRING)
+              (DESCRIPTION :STRING) (EXTENSION :STRING) (REGEXPR :STRING)) 
 
-(cffi:defcfun ("FreeImage_IsPluginEnabled" FreeImage_IsPluginEnabled) :int
-  (fif :int))
+(CFFI:DEFCFUN
+ ("FreeImage_RegisterExternalPlugin" FREEIMAGE-REGISTEREXTERNALPLUGIN) :INT
+ (PATH :STRING) (FORMAT :STRING) (DESCRIPTION :STRING) (EXTENSION :STRING)
+ (REGEXPR :STRING)) 
 
-(cffi:defcfun ("FreeImage_GetFIFFromFormat" FreeImage_GetFIFFromFormat) :int
-  (format :string))
+(CFFI:DEFCFUN ("FreeImage_GetFIFCount" FREEIMAGE-GETFIFCOUNT) :INT) 
 
-(cffi:defcfun ("FreeImage_GetFIFFromMime" FreeImage_GetFIFFromMime) :int
-  (mime :string))
+(CFFI:DEFCFUN ("FreeImage_SetPluginEnabled" FREEIMAGE-SETPLUGINENABLED) :INT
+              (FIF :INT) (ENABLE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetFormatFromFIF" FreeImage_GetFormatFromFIF) :string
-  (fif :int))
+(CFFI:DEFCFUN ("FreeImage_IsPluginEnabled" FREEIMAGE-ISPLUGINENABLED) :INT
+              (FIF :INT)) 
 
-(cffi:defcfun ("FreeImage_GetFIFExtensionList" FreeImage_GetFIFExtensionList) :string
-  (fif :int))
+(CFFI:DEFCFUN ("FreeImage_GetFIFFromFormat" FREEIMAGE-GETFIFFROMFORMAT) :INT
+              (FORMAT :STRING)) 
 
-(cffi:defcfun ("FreeImage_GetFIFDescription" FreeImage_GetFIFDescription) :string
-  (fif :int))
+(CFFI:DEFCFUN ("FreeImage_GetFIFFromMime" FREEIMAGE-GETFIFFROMMIME) :INT
+              (MIME :STRING)) 
 
-(cffi:defcfun ("FreeImage_GetFIFRegExpr" FreeImage_GetFIFRegExpr) :string
-  (fif :int))
+(CFFI:DEFCFUN ("FreeImage_GetFormatFromFIF" FREEIMAGE-GETFORMATFROMFIF) :STRING
+              (FIF :INT)) 
 
-(cffi:defcfun ("FreeImage_GetFIFMimeType" FreeImage_GetFIFMimeType) :string
-  (fif :int))
+(CFFI:DEFCFUN ("FreeImage_GetFIFExtensionList" FREEIMAGE-GETFIFEXTENSIONLIST)
+              :STRING (FIF :INT)) 
 
-(cffi:defcfun ("FreeImage_GetFIFFromFilename" FreeImage_GetFIFFromFilename) :int
-  (filename :string))
+(CFFI:DEFCFUN ("FreeImage_GetFIFDescription" FREEIMAGE-GETFIFDESCRIPTION)
+              :STRING (FIF :INT)) 
 
-(cffi:defcfun ("FreeImage_GetFIFFromFilenameU" FreeImage_GetFIFFromFilenameU) :int
-  (filename :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetFIFRegExpr" FREEIMAGE-GETFIFREGEXPR) :STRING
+              (FIF :INT)) 
 
-(cffi:defcfun ("FreeImage_FIFSupportsReading" FreeImage_FIFSupportsReading) :pointer
-  (fif :int))
+(CFFI:DEFCFUN ("FreeImage_GetFIFMimeType" FREEIMAGE-GETFIFMIMETYPE) :STRING
+              (FIF :INT)) 
 
-(cffi:defcfun ("FreeImage_FIFSupportsWriting" FreeImage_FIFSupportsWriting) :pointer
-  (fif :int))
+(CFFI:DEFCFUN ("FreeImage_GetFIFFromFilename" FREEIMAGE-GETFIFFROMFILENAME)
+              :INT (FILENAME :STRING)) 
 
-(cffi:defcfun ("FreeImage_FIFSupportsExportBPP" FreeImage_FIFSupportsExportBPP) :pointer
-  (fif :int)
-  (bpp :int))
+(CFFI:DEFCFUN ("FreeImage_GetFIFFromFilenameU" FREEIMAGE-GETFIFFROMFILENAMEU)
+              :INT (FILENAME :POINTER)) 
 
-(cffi:defcfun ("FreeImage_FIFSupportsExportType" FreeImage_FIFSupportsExportType) :pointer
-  (fif :int)
-  (type :int))
+(CFFI:DEFCFUN ("FreeImage_FIFSupportsReading" FREEIMAGE-FIFSUPPORTSREADING)
+              :POINTER (FIF :INT)) 
 
-(cffi:defcfun ("FreeImage_FIFSupportsICCProfiles" FreeImage_FIFSupportsICCProfiles) :pointer
-  (fif :int))
+(CFFI:DEFCFUN ("FreeImage_FIFSupportsWriting" FREEIMAGE-FIFSUPPORTSWRITING)
+              :POINTER (FIF :INT)) 
 
-(cffi:defcfun ("FreeImage_OpenMultiBitmap" FreeImage_OpenMultiBitmap) :pointer
-  (fif :int)
-  (filename :string)
-  (create_new :pointer)
-  (read_only :pointer)
-  (keep_cache_in_memory :pointer)
-  (flags :int))
+(CFFI:DEFCFUN ("FreeImage_FIFSupportsExportBPP" FREEIMAGE-FIFSUPPORTSEXPORTBPP)
+              :POINTER (FIF :INT) (BPP :INT)) 
 
-(cffi:defcfun ("FreeImage_OpenMultiBitmapFromHandle" FreeImage_OpenMultiBitmapFromHandle) :pointer
-  (fif :int)
-  (io :pointer)
-  (handle :pointer)
-  (flags :int))
+(CFFI:DEFCFUN
+ ("FreeImage_FIFSupportsExportType" FREEIMAGE-FIFSUPPORTSEXPORTTYPE) :POINTER
+ (FIF :INT) (TYPE :INT)) 
 
-(cffi:defcfun ("FreeImage_CloseMultiBitmap" FreeImage_CloseMultiBitmap) :pointer
-  (bitmap :pointer)
-  (flags :int))
+(CFFI:DEFCFUN
+ ("FreeImage_FIFSupportsICCProfiles" FREEIMAGE-FIFSUPPORTSICCPROFILES) :POINTER
+ (FIF :INT)) 
 
-(cffi:defcfun ("FreeImage_GetPageCount" FreeImage_GetPageCount) :int
-  (bitmap :pointer))
+(CFFI:DEFCFUN ("FreeImage_OpenMultiBitmap" FREEIMAGE-OPENMULTIBITMAP) :POINTER
+              (FIF :INT) (FILENAME :STRING) (CREATE_NEW :POINTER)
+              (READ_ONLY :POINTER) (KEEP_CACHE_IN_MEMORY :POINTER) (FLAGS :INT)) 
 
-(cffi:defcfun ("FreeImage_AppendPage" FreeImage_AppendPage) :void
-  (bitmap :pointer)
-  (data :pointer))
+(CFFI:DEFCFUN
+ ("FreeImage_OpenMultiBitmapFromHandle" FREEIMAGE-OPENMULTIBITMAPFROMHANDLE)
+ :POINTER (FIF :INT) (IO :POINTER) (HANDLE :POINTER) (FLAGS :INT)) 
 
-(cffi:defcfun ("FreeImage_InsertPage" FreeImage_InsertPage) :void
-  (bitmap :pointer)
-  (page :int)
-  (data :pointer))
+(CFFI:DEFCFUN ("FreeImage_CloseMultiBitmap" FREEIMAGE-CLOSEMULTIBITMAP)
+              :POINTER (BITMAP :POINTER) (FLAGS :INT)) 
 
-(cffi:defcfun ("FreeImage_DeletePage" FreeImage_DeletePage) :void
-  (bitmap :pointer)
-  (page :int))
+(CFFI:DEFCFUN ("FreeImage_GetPageCount" FREEIMAGE-GETPAGECOUNT) :INT
+              (BITMAP :POINTER)) 
 
-(cffi:defcfun ("FreeImage_LockPage" FreeImage_LockPage) :pointer
-  (bitmap :pointer)
-  (page :int))
+(CFFI:DEFCFUN ("FreeImage_AppendPage" FREEIMAGE-APPENDPAGE) :VOID
+              (BITMAP :POINTER) (DATA :POINTER)) 
 
-(cffi:defcfun ("FreeImage_UnlockPage" FreeImage_UnlockPage) :void
-  (bitmap :pointer)
-  (data :pointer)
-  (changed :pointer))
+(CFFI:DEFCFUN ("FreeImage_InsertPage" FREEIMAGE-INSERTPAGE) :VOID
+              (BITMAP :POINTER) (PAGE :INT) (DATA :POINTER)) 
 
-(cffi:defcfun ("FreeImage_MovePage" FreeImage_MovePage) :pointer
-  (bitmap :pointer)
-  (target :int)
-  (source :int))
+(CFFI:DEFCFUN ("FreeImage_DeletePage" FREEIMAGE-DELETEPAGE) :VOID
+              (BITMAP :POINTER) (PAGE :INT)) 
 
-(cffi:defcfun ("FreeImage_GetLockedPageNumbers" FreeImage_GetLockedPageNumbers) :pointer
-  (bitmap :pointer)
-  (pages :pointer)
-  (count :pointer))
+(CFFI:DEFCFUN ("FreeImage_LockPage" FREEIMAGE-LOCKPAGE) :POINTER
+              (BITMAP :POINTER) (PAGE :INT)) 
 
-(cffi:defcfun ("FreeImage_GetFileType" FreeImage_GetFileType) FREE-IMAGE-FORMAT
-  (filename :string)
-  (size :int))
+(CFFI:DEFCFUN ("FreeImage_UnlockPage" FREEIMAGE-UNLOCKPAGE) :VOID
+              (BITMAP :POINTER) (DATA :POINTER) (CHANGED :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetFileTypeU" FreeImage_GetFileTypeU) :int
-  (filename :pointer)
-  (size :int))
+(CFFI:DEFCFUN ("FreeImage_MovePage" FREEIMAGE-MOVEPAGE) :POINTER
+              (BITMAP :POINTER) (TARGET :INT) (SOURCE :INT)) 
 
-(cffi:defcfun ("FreeImage_GetFileTypeFromHandle" FreeImage_GetFileTypeFromHandle) :int
-  (io :pointer)
-  (handle :pointer)
-  (size :int))
+(CFFI:DEFCFUN ("FreeImage_GetLockedPageNumbers" FREEIMAGE-GETLOCKEDPAGENUMBERS)
+              :POINTER (BITMAP :POINTER) (PAGES :POINTER) (COUNT :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetFileTypeFromMemory" FreeImage_GetFileTypeFromMemory) :int
-  (stream :pointer)
-  (size :int))
+(CFFI:DEFCFUN ("FreeImage_GetFileType" FREEIMAGE-GETFILETYPE) FREE-IMAGE-FORMAT
+              (FILENAME :STRING) (SIZE :INT)) 
 
-(cffi:defcfun ("FreeImage_GetImageType" FreeImage_GetImageType) :int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetFileTypeU" FREEIMAGE-GETFILETYPEU) :INT
+              (FILENAME :POINTER) (SIZE :INT)) 
 
-(cffi:defcfun ("FreeImage_IsLittleEndian" FreeImage_IsLittleEndian) :pointer)
+(CFFI:DEFCFUN
+ ("FreeImage_GetFileTypeFromHandle" FREEIMAGE-GETFILETYPEFROMHANDLE) :INT
+ (IO :POINTER) (HANDLE :POINTER) (SIZE :INT)) 
 
-(cffi:defcfun ("FreeImage_LookupX11Color" FreeImage_LookupX11Color) :pointer
-  (szColor :string)
-  (nRed :pointer)
-  (nGreen :pointer)
-  (nBlue :pointer))
+(CFFI:DEFCFUN
+ ("FreeImage_GetFileTypeFromMemory" FREEIMAGE-GETFILETYPEFROMMEMORY) :INT
+ (STREAM :POINTER) (SIZE :INT)) 
 
-(cffi:defcfun ("FreeImage_LookupSVGColor" FreeImage_LookupSVGColor) :pointer
-  (szColor :string)
-  (nRed :pointer)
-  (nGreen :pointer)
-  (nBlue :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetImageType" FREEIMAGE-GETIMAGETYPE) :INT
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetBits" FreeImage_GetBits) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_IsLittleEndian" FREEIMAGE-ISLITTLEENDIAN) :POINTER) 
 
-(cffi:defcfun ("FreeImage_GetScanLine" FreeImage_GetScanLine) :pointer
-  (dib :pointer)
-  (scanline :int))
+(CFFI:DEFCFUN ("FreeImage_LookupX11Color" FREEIMAGE-LOOKUPX11COLOR) :POINTER
+              (SZCOLOR :STRING) (NRED :POINTER) (NGREEN :POINTER)
+              (NBLUE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetPixelIndex" FreeImage_GetPixelIndex) :pointer
-  (dib :pointer)
-  (x :unsigned-int)
-  (y :unsigned-int)
-  (value :pointer))
+(CFFI:DEFCFUN ("FreeImage_LookupSVGColor" FREEIMAGE-LOOKUPSVGCOLOR) :POINTER
+              (SZCOLOR :STRING) (NRED :POINTER) (NGREEN :POINTER)
+              (NBLUE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetPixelColor" FreeImage_GetPixelColor) :pointer
-  (dib :pointer)
-  (x :unsigned-int)
-  (y :unsigned-int)
-  (value :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetBits" FREEIMAGE-GETBITS) :POINTER (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetPixelIndex" FreeImage_SetPixelIndex) :pointer
-  (dib :pointer)
-  (x :unsigned-int)
-  (y :unsigned-int)
-  (value :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetScanLine" FREEIMAGE-GETSCANLINE) :POINTER
+              (DIB :POINTER) (SCANLINE :INT)) 
 
-(cffi:defcfun ("FreeImage_SetPixelColor" FreeImage_SetPixelColor) :pointer
-  (dib :pointer)
-  (x :unsigned-int)
-  (y :unsigned-int)
-  (value :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetPixelIndex" FREEIMAGE-GETPIXELINDEX) :POINTER
+              (DIB :POINTER) (X :UNSIGNED-INT) (Y :UNSIGNED-INT)
+              (VALUE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetColorsUsed" FreeImage_GetColorsUsed) :unsigned-int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetPixelColor" FREEIMAGE-GETPIXELCOLOR) :POINTER
+              (DIB :POINTER) (X :UNSIGNED-INT) (Y :UNSIGNED-INT)
+              (VALUE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetBPP" FreeImage_GetBPP) :unsigned-int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetPixelIndex" FREEIMAGE-SETPIXELINDEX) :POINTER
+              (DIB :POINTER) (X :UNSIGNED-INT) (Y :UNSIGNED-INT)
+              (VALUE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetWidth" FreeImage_GetWidth) :unsigned-int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetPixelColor" FREEIMAGE-SETPIXELCOLOR) :POINTER
+              (DIB :POINTER) (X :UNSIGNED-INT) (Y :UNSIGNED-INT)
+              (VALUE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetHeight" FreeImage_GetHeight) :unsigned-int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetColorsUsed" FREEIMAGE-GETCOLORSUSED) :UNSIGNED-INT
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetLine" FreeImage_GetLine) :unsigned-int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetBPP" FREEIMAGE-GETBPP) :UNSIGNED-INT
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetPitch" FreeImage_GetPitch) :unsigned-int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetWidth" FREEIMAGE-GETWIDTH) :UNSIGNED-INT
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetDIBSize" FreeImage_GetDIBSize) :unsigned-int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetHeight" FREEIMAGE-GETHEIGHT) :UNSIGNED-INT
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetPalette" FreeImage_GetPalette) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetLine" FREEIMAGE-GETLINE) :UNSIGNED-INT
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetDotsPerMeterX" FreeImage_GetDotsPerMeterX) :unsigned-int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetPitch" FREEIMAGE-GETPITCH) :UNSIGNED-INT
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetDotsPerMeterY" FreeImage_GetDotsPerMeterY) :unsigned-int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetDIBSize" FREEIMAGE-GETDIBSIZE) :UNSIGNED-INT
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetDotsPerMeterX" FreeImage_SetDotsPerMeterX) :void
-  (dib :pointer)
-  (res :unsigned-int))
+(CFFI:DEFCFUN ("FreeImage_GetPalette" FREEIMAGE-GETPALETTE) :POINTER
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetDotsPerMeterY" FreeImage_SetDotsPerMeterY) :void
-  (dib :pointer)
-  (res :unsigned-int))
+(CFFI:DEFCFUN ("FreeImage_GetDotsPerMeterX" FREEIMAGE-GETDOTSPERMETERX)
+              :UNSIGNED-INT (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetInfoHeader" FreeImage_GetInfoHeader) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetDotsPerMeterY" FREEIMAGE-GETDOTSPERMETERY)
+              :UNSIGNED-INT (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetInfo" FreeImage_GetInfo) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetDotsPerMeterX" FREEIMAGE-SETDOTSPERMETERX) :VOID
+              (DIB :POINTER) (RES :UNSIGNED-INT)) 
 
-(cffi:defcfun ("FreeImage_GetColorType" FreeImage_GetColorType) :int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetDotsPerMeterY" FREEIMAGE-SETDOTSPERMETERY) :VOID
+              (DIB :POINTER) (RES :UNSIGNED-INT)) 
 
-(cffi:defcfun ("FreeImage_GetRedMask" FreeImage_GetRedMask) :unsigned-int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetInfoHeader" FREEIMAGE-GETINFOHEADER) :POINTER
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetGreenMask" FreeImage_GetGreenMask) :unsigned-int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetInfo" FREEIMAGE-GETINFO) :POINTER (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetBlueMask" FreeImage_GetBlueMask) :unsigned-int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetColorType" FREEIMAGE-GETCOLORTYPE) :INT
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetTransparencyCount" FreeImage_GetTransparencyCount) :unsigned-int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetRedMask" FREEIMAGE-GETREDMASK) :UNSIGNED-INT
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetTransparencyTable" FreeImage_GetTransparencyTable) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetGreenMask" FREEIMAGE-GETGREENMASK) :UNSIGNED-INT
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetTransparent" FreeImage_SetTransparent) :void
-  (dib :pointer)
-  (enabled :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetBlueMask" FREEIMAGE-GETBLUEMASK) :UNSIGNED-INT
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetTransparencyTable" FreeImage_SetTransparencyTable) :void
-  (dib :pointer)
-  (table :pointer)
-  (count :int))
+(CFFI:DEFCFUN ("FreeImage_GetTransparencyCount" FREEIMAGE-GETTRANSPARENCYCOUNT)
+              :UNSIGNED-INT (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_IsTransparent" FreeImage_IsTransparent) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetTransparencyTable" FREEIMAGE-GETTRANSPARENCYTABLE)
+              :POINTER (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetTransparentIndex" FreeImage_SetTransparentIndex) :void
-  (dib :pointer)
-  (index :int))
+(CFFI:DEFCFUN ("FreeImage_SetTransparent" FREEIMAGE-SETTRANSPARENT) :VOID
+              (DIB :POINTER) (ENABLED :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetTransparentIndex" FreeImage_GetTransparentIndex) :int
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetTransparencyTable" FREEIMAGE-SETTRANSPARENCYTABLE)
+              :VOID (DIB :POINTER) (TABLE :POINTER) (COUNT :INT)) 
 
-(cffi:defcfun ("FreeImage_HasBackgroundColor" FreeImage_HasBackgroundColor) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_IsTransparent" FREEIMAGE-ISTRANSPARENT) :POINTER
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetBackgroundColor" FreeImage_GetBackgroundColor) :pointer
-  (dib :pointer)
-  (bkcolor :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetTransparentIndex" FREEIMAGE-SETTRANSPARENTINDEX)
+              :VOID (DIB :POINTER) (INDEX :INT)) 
 
-(cffi:defcfun ("FreeImage_SetBackgroundColor" FreeImage_SetBackgroundColor) :pointer
-  (dib :pointer)
-  (bkcolor :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetTransparentIndex" FREEIMAGE-GETTRANSPARENTINDEX)
+              :INT (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetICCProfile" FreeImage_GetICCProfile) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_HasBackgroundColor" FREEIMAGE-HASBACKGROUNDCOLOR)
+              :POINTER (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_CreateICCProfile" FreeImage_CreateICCProfile) :pointer
-  (dib :pointer)
-  (data :pointer)
-  (size :long))
+(CFFI:DEFCFUN ("FreeImage_GetBackgroundColor" FREEIMAGE-GETBACKGROUNDCOLOR)
+              :POINTER (DIB :POINTER) (BKCOLOR :POINTER)) 
 
-(cffi:defcfun ("FreeImage_DestroyICCProfile" FreeImage_DestroyICCProfile) :void
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetBackgroundColor" FREEIMAGE-SETBACKGROUNDCOLOR)
+              :POINTER (DIB :POINTER) (BKCOLOR :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine1To4" FreeImage_ConvertLine1To4) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_GetICCProfile" FREEIMAGE-GETICCPROFILE) :POINTER
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine8To4" FreeImage_ConvertLine8To4) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int)
-  (palette :pointer))
+(CFFI:DEFCFUN ("FreeImage_CreateICCProfile" FREEIMAGE-CREATEICCPROFILE)
+              :POINTER (DIB :POINTER) (DATA :POINTER) (SIZE :LONG)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine16To4_555" FreeImage_ConvertLine16To4_555) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_DestroyICCProfile" FREEIMAGE-DESTROYICCPROFILE) :VOID
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine16To4_565" FreeImage_ConvertLine16To4_565) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine1To4" FREEIMAGE-CONVERTLINE1TO4) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine24To4" FreeImage_ConvertLine24To4) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine8To4" FREEIMAGE-CONVERTLINE8TO4) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)
+              (PALETTE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine32To4" FreeImage_ConvertLine32To4) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine16To4_555" FREEIMAGE-CONVERTLINE16TO4-555)
+              :VOID (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine1To8" FreeImage_ConvertLine1To8) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine16To4_565" FREEIMAGE-CONVERTLINE16TO4-565)
+              :VOID (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine4To8" FreeImage_ConvertLine4To8) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine24To4" FREEIMAGE-CONVERTLINE24TO4) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine16To8_555" FreeImage_ConvertLine16To8_555) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine32To4" FREEIMAGE-CONVERTLINE32TO4) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine16To8_565" FreeImage_ConvertLine16To8_565) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine1To8" FREEIMAGE-CONVERTLINE1TO8) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine24To8" FreeImage_ConvertLine24To8) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine4To8" FREEIMAGE-CONVERTLINE4TO8) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine32To8" FreeImage_ConvertLine32To8) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine16To8_555" FREEIMAGE-CONVERTLINE16TO8-555)
+              :VOID (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine1To16_555" FreeImage_ConvertLine1To16_555) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int)
-  (palette :pointer))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine16To8_565" FREEIMAGE-CONVERTLINE16TO8-565)
+              :VOID (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine4To16_555" FreeImage_ConvertLine4To16_555) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int)
-  (palette :pointer))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine24To8" FREEIMAGE-CONVERTLINE24TO8) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine8To16_555" FreeImage_ConvertLine8To16_555) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int)
-  (palette :pointer))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine32To8" FREEIMAGE-CONVERTLINE32TO8) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine16_565_To16_555" FreeImage_ConvertLine16_565_To16_555) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine1To16_555" FREEIMAGE-CONVERTLINE1TO16-555)
+              :VOID (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)
+              (PALETTE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine24To16_555" FreeImage_ConvertLine24To16_555) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine4To16_555" FREEIMAGE-CONVERTLINE4TO16-555)
+              :VOID (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)
+              (PALETTE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine32To16_555" FreeImage_ConvertLine32To16_555) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine8To16_555" FREEIMAGE-CONVERTLINE8TO16-555)
+              :VOID (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)
+              (PALETTE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine1To16_565" FreeImage_ConvertLine1To16_565) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int)
-  (palette :pointer))
+(CFFI:DEFCFUN
+ ("FreeImage_ConvertLine16_565_To16_555" FREEIMAGE-CONVERTLINE16-565-TO16-555)
+ :VOID (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine4To16_565" FreeImage_ConvertLine4To16_565) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int)
-  (palette :pointer))
+(CFFI:DEFCFUN
+ ("FreeImage_ConvertLine24To16_555" FREEIMAGE-CONVERTLINE24TO16-555) :VOID
+ (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine8To16_565" FreeImage_ConvertLine8To16_565) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int)
-  (palette :pointer))
+(CFFI:DEFCFUN
+ ("FreeImage_ConvertLine32To16_555" FREEIMAGE-CONVERTLINE32TO16-555) :VOID
+ (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine16_555_To16_565" FreeImage_ConvertLine16_555_To16_565) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine1To16_565" FREEIMAGE-CONVERTLINE1TO16-565)
+              :VOID (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)
+              (PALETTE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine24To16_565" FreeImage_ConvertLine24To16_565) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine4To16_565" FREEIMAGE-CONVERTLINE4TO16-565)
+              :VOID (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)
+              (PALETTE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine32To16_565" FreeImage_ConvertLine32To16_565) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine8To16_565" FREEIMAGE-CONVERTLINE8TO16-565)
+              :VOID (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)
+              (PALETTE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine1To24" FreeImage_ConvertLine1To24) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int)
-  (palette :pointer))
+(CFFI:DEFCFUN
+ ("FreeImage_ConvertLine16_555_To16_565" FREEIMAGE-CONVERTLINE16-555-TO16-565)
+ :VOID (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine4To24" FreeImage_ConvertLine4To24) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int)
-  (palette :pointer))
+(CFFI:DEFCFUN
+ ("FreeImage_ConvertLine24To16_565" FREEIMAGE-CONVERTLINE24TO16-565) :VOID
+ (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine8To24" FreeImage_ConvertLine8To24) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int)
-  (palette :pointer))
+(CFFI:DEFCFUN
+ ("FreeImage_ConvertLine32To16_565" FREEIMAGE-CONVERTLINE32TO16-565) :VOID
+ (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine16To24_555" FreeImage_ConvertLine16To24_555) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine1To24" FREEIMAGE-CONVERTLINE1TO24) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)
+              (PALETTE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine16To24_565" FreeImage_ConvertLine16To24_565) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine4To24" FREEIMAGE-CONVERTLINE4TO24) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)
+              (PALETTE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine32To24" FreeImage_ConvertLine32To24) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine8To24" FREEIMAGE-CONVERTLINE8TO24) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)
+              (PALETTE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine1To32" FreeImage_ConvertLine1To32) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int)
-  (palette :pointer))
+(CFFI:DEFCFUN
+ ("FreeImage_ConvertLine16To24_555" FREEIMAGE-CONVERTLINE16TO24-555) :VOID
+ (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine4To32" FreeImage_ConvertLine4To32) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int)
-  (palette :pointer))
+(CFFI:DEFCFUN
+ ("FreeImage_ConvertLine16To24_565" FREEIMAGE-CONVERTLINE16TO24-565) :VOID
+ (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine8To32" FreeImage_ConvertLine8To32) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int)
-  (palette :pointer))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine32To24" FREEIMAGE-CONVERTLINE32TO24) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine16To32_555" FreeImage_ConvertLine16To32_555) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine1To32" FREEIMAGE-CONVERTLINE1TO32) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)
+              (PALETTE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine16To32_565" FreeImage_ConvertLine16To32_565) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine4To32" FREEIMAGE-CONVERTLINE4TO32) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)
+              (PALETTE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertLine24To32" FreeImage_ConvertLine24To32) :void
-  (target :pointer)
-  (source :pointer)
-  (width_in_pixels :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine8To32" FREEIMAGE-CONVERTLINE8TO32) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)
+              (PALETTE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertTo4Bits" FreeImage_ConvertTo4Bits) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN
+ ("FreeImage_ConvertLine16To32_555" FREEIMAGE-CONVERTLINE16TO32-555) :VOID
+ (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertTo8Bits" FreeImage_ConvertTo8Bits) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN
+ ("FreeImage_ConvertLine16To32_565" FREEIMAGE-CONVERTLINE16TO32-565) :VOID
+ (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertToGreyscale" FreeImage_ConvertToGreyscale) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_ConvertLine24To32" FREEIMAGE-CONVERTLINE24TO32) :VOID
+              (TARGET :POINTER) (SOURCE :POINTER) (WIDTH_IN_PIXELS :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertTo16Bits555" FreeImage_ConvertTo16Bits555) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_ConvertTo4Bits" FREEIMAGE-CONVERTTO4BITS) :POINTER
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertTo16Bits565" FreeImage_ConvertTo16Bits565) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_ConvertTo8Bits" FREEIMAGE-CONVERTTO8BITS) :POINTER
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertTo24Bits" FreeImage_ConvertTo24Bits) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_ConvertToGreyscale" FREEIMAGE-CONVERTTOGREYSCALE)
+              :POINTER (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertTo32Bits" FreeImage_ConvertTo32Bits) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_ConvertTo16Bits555" FREEIMAGE-CONVERTTO16BITS555)
+              :POINTER (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ColorQuantize" FreeImage_ColorQuantize) :pointer
-  (dib :pointer)
-  (quantize :int))
+(CFFI:DEFCFUN ("FreeImage_ConvertTo16Bits565" FREEIMAGE-CONVERTTO16BITS565)
+              :POINTER (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ColorQuantizeEx" FreeImage_ColorQuantizeEx) :pointer
-  (dib :pointer)
-  (quantize :int)
-  (PaletteSize :int)
-  (ReserveSize :int)
-  (ReservePalette :pointer))
+(CFFI:DEFCFUN ("FreeImage_ConvertTo24Bits" FREEIMAGE-CONVERTTO24BITS) :POINTER
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_Threshold" FreeImage_Threshold) :pointer
-  (dib :pointer)
-  (t_arg1 :pointer))
+(CFFI:DEFCFUN ("FreeImage_ConvertTo32Bits" FREEIMAGE-CONVERTTO32BITS) :POINTER
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_Dither" FreeImage_Dither) :pointer
-  (dib :pointer)
-  (algorithm :int))
+(CFFI:DEFCFUN ("FreeImage_ColorQuantize" FREEIMAGE-COLORQUANTIZE) :POINTER
+              (DIB :POINTER) (QUANTIZE :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertFromRawBits" FreeImage_ConvertFromRawBits) :pointer
-  (bits :pointer)
-  (width :int)
-  (height :int)
-  (pitch :int)
-  (bpp :unsigned-int)
-  (red_mask :unsigned-int)
-  (green_mask :unsigned-int)
-  (blue_mask :unsigned-int)
-  (topdown :pointer))
+(CFFI:DEFCFUN ("FreeImage_ColorQuantizeEx" FREEIMAGE-COLORQUANTIZEEX) :POINTER
+              (DIB :POINTER) (QUANTIZE :INT) (PALETTESIZE :INT)
+              (RESERVESIZE :INT) (RESERVEPALETTE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertToRawBits" FreeImage_ConvertToRawBits) :void
-  (bits :pointer)
-  (dib :pointer)
-  (pitch :int)
-  (bpp :unsigned-int)
-  (red_mask :unsigned-int)
-  (green_mask :unsigned-int)
-  (blue_mask :unsigned-int)
-  (topdown :pointer))
+(CFFI:DEFCFUN ("FreeImage_Threshold" FREEIMAGE-THRESHOLD) :POINTER
+              (DIB :POINTER) (T_ARG1 :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertToRGBF" FreeImage_ConvertToRGBF) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_Dither" FREEIMAGE-DITHER) :POINTER (DIB :POINTER)
+              (ALGORITHM :INT)) 
 
-(cffi:defcfun ("FreeImage_ConvertToStandardType" FreeImage_ConvertToStandardType) :pointer
-  (src :pointer)
-  (scale_linear :pointer))
+(CFFI:DEFCFUN ("FreeImage_ConvertFromRawBits" FREEIMAGE-CONVERTFROMRAWBITS)
+              :POINTER (BITS :POINTER) (WIDTH :INT) (HEIGHT :INT) (PITCH :INT)
+              (BPP :UNSIGNED-INT) (RED_MASK :UNSIGNED-INT)
+              (GREEN_MASK :UNSIGNED-INT) (BLUE_MASK :UNSIGNED-INT)
+              (TOPDOWN :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ConvertToType" FreeImage_ConvertToType) :pointer
-  (src :pointer)
-  (dst_type :int)
-  (scale_linear :pointer))
+(CFFI:DEFCFUN ("FreeImage_ConvertToRawBits" FREEIMAGE-CONVERTTORAWBITS) :VOID
+              (BITS :POINTER) (DIB :POINTER) (PITCH :INT) (BPP :UNSIGNED-INT)
+              (RED_MASK :UNSIGNED-INT) (GREEN_MASK :UNSIGNED-INT)
+              (BLUE_MASK :UNSIGNED-INT) (TOPDOWN :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ToneMapping" FreeImage_ToneMapping) :pointer
-  (dib :pointer)
-  (tmo :int)
-  (first_param :double)
-  (second_param :double))
+(CFFI:DEFCFUN ("FreeImage_ConvertToRGBF" FREEIMAGE-CONVERTTORGBF) :POINTER
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_TmoDrago03" FreeImage_TmoDrago03) :pointer
-  (src :pointer)
-  (gamma :double)
-  (exposure :double))
+(CFFI:DEFCFUN
+ ("FreeImage_ConvertToStandardType" FREEIMAGE-CONVERTTOSTANDARDTYPE) :POINTER
+ (SRC :POINTER) (SCALE_LINEAR :POINTER)) 
 
-(cffi:defcfun ("FreeImage_TmoReinhard05" FreeImage_TmoReinhard05) :pointer
-  (src :pointer)
-  (intensity :double)
-  (contrast :double))
+(CFFI:DEFCFUN ("FreeImage_ConvertToType" FREEIMAGE-CONVERTTOTYPE) :POINTER
+              (SRC :POINTER) (DST_TYPE :INT) (SCALE_LINEAR :POINTER)) 
 
-(cffi:defcfun ("FreeImage_TmoReinhard05Ex" FreeImage_TmoReinhard05Ex) :pointer
-  (src :pointer)
-  (intensity :double)
-  (contrast :double)
-  (adaptation :double)
-  (color_correction :double))
+(CFFI:DEFCFUN ("FreeImage_ToneMapping" FREEIMAGE-TONEMAPPING) :POINTER
+              (DIB :POINTER) (TMO :INT) (FIRST_PARAM :DOUBLE)
+              (SECOND_PARAM :DOUBLE)) 
 
-(cffi:defcfun ("FreeImage_TmoFattal02" FreeImage_TmoFattal02) :pointer
-  (src :pointer)
-  (color_saturation :double)
-  (attenuation :double))
+(CFFI:DEFCFUN ("FreeImage_TmoDrago03" FREEIMAGE-TMODRAGO03) :POINTER
+              (SRC :POINTER) (GAMMA :DOUBLE) (EXPOSURE :DOUBLE)) 
 
-(cffi:defcfun ("FreeImage_ZLibCompress" FreeImage_ZLibCompress) :pointer
-  (target :pointer)
-  (target_size :pointer)
-  (source :pointer)
-  (source_size :pointer))
+(CFFI:DEFCFUN ("FreeImage_TmoReinhard05" FREEIMAGE-TMOREINHARD05) :POINTER
+              (SRC :POINTER) (INTENSITY :DOUBLE) (CONTRAST :DOUBLE)) 
 
-(cffi:defcfun ("FreeImage_ZLibUncompress" FreeImage_ZLibUncompress) :pointer
-  (target :pointer)
-  (target_size :pointer)
-  (source :pointer)
-  (source_size :pointer))
+(CFFI:DEFCFUN ("FreeImage_TmoReinhard05Ex" FREEIMAGE-TMOREINHARD05EX) :POINTER
+              (SRC :POINTER) (INTENSITY :DOUBLE) (CONTRAST :DOUBLE)
+              (ADAPTATION :DOUBLE) (COLOR_CORRECTION :DOUBLE)) 
 
-(cffi:defcfun ("FreeImage_ZLibGZip" FreeImage_ZLibGZip) :pointer
-  (target :pointer)
-  (target_size :pointer)
-  (source :pointer)
-  (source_size :pointer))
+(CFFI:DEFCFUN ("FreeImage_TmoFattal02" FREEIMAGE-TMOFATTAL02) :POINTER
+              (SRC :POINTER) (COLOR_SATURATION :DOUBLE) (ATTENUATION :DOUBLE)) 
 
-(cffi:defcfun ("FreeImage_ZLibGUnzip" FreeImage_ZLibGUnzip) :pointer
-  (target :pointer)
-  (target_size :pointer)
-  (source :pointer)
-  (source_size :pointer))
+(CFFI:DEFCFUN ("FreeImage_ZLibCompress" FREEIMAGE-ZLIBCOMPRESS) :POINTER
+              (TARGET :POINTER) (TARGET_SIZE :POINTER) (SOURCE :POINTER)
+              (SOURCE_SIZE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ZLibCRC32" FreeImage_ZLibCRC32) :pointer
-  (crc :pointer)
-  (source :pointer)
-  (source_size :pointer))
+(CFFI:DEFCFUN ("FreeImage_ZLibUncompress" FREEIMAGE-ZLIBUNCOMPRESS) :POINTER
+              (TARGET :POINTER) (TARGET_SIZE :POINTER) (SOURCE :POINTER)
+              (SOURCE_SIZE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_CreateTag" FreeImage_CreateTag) :pointer)
+(CFFI:DEFCFUN ("FreeImage_ZLibGZip" FREEIMAGE-ZLIBGZIP) :POINTER
+              (TARGET :POINTER) (TARGET_SIZE :POINTER) (SOURCE :POINTER)
+              (SOURCE_SIZE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_DeleteTag" FreeImage_DeleteTag) :void
-  (tag :pointer))
+(CFFI:DEFCFUN ("FreeImage_ZLibGUnzip" FREEIMAGE-ZLIBGUNZIP) :POINTER
+              (TARGET :POINTER) (TARGET_SIZE :POINTER) (SOURCE :POINTER)
+              (SOURCE_SIZE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_CloneTag" FreeImage_CloneTag) :pointer
-  (tag :pointer))
+(CFFI:DEFCFUN ("FreeImage_ZLibCRC32" FREEIMAGE-ZLIBCRC32) :POINTER
+              (CRC :POINTER) (SOURCE :POINTER) (SOURCE_SIZE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetTagKey" FreeImage_GetTagKey) :string
-  (tag :pointer))
+(CFFI:DEFCFUN ("FreeImage_CreateTag" FREEIMAGE-CREATETAG) :POINTER) 
 
-(cffi:defcfun ("FreeImage_GetTagDescription" FreeImage_GetTagDescription) :string
-  (tag :pointer))
+(CFFI:DEFCFUN ("FreeImage_DeleteTag" FREEIMAGE-DELETETAG) :VOID (TAG :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetTagID" FreeImage_GetTagID) :pointer
-  (tag :pointer))
+(CFFI:DEFCFUN ("FreeImage_CloneTag" FREEIMAGE-CLONETAG) :POINTER (TAG :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetTagType" FreeImage_GetTagType) :int
-  (tag :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetTagKey" FREEIMAGE-GETTAGKEY) :STRING
+              (TAG :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetTagCount" FreeImage_GetTagCount) :pointer
-  (tag :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetTagDescription" FREEIMAGE-GETTAGDESCRIPTION)
+              :STRING (TAG :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetTagLength" FreeImage_GetTagLength) :pointer
-  (tag :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetTagID" FREEIMAGE-GETTAGID) :POINTER (TAG :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetTagValue" FreeImage_GetTagValue) :pointer
-  (tag :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetTagType" FREEIMAGE-GETTAGTYPE) :INT (TAG :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetTagKey" FreeImage_SetTagKey) :pointer
-  (tag :pointer)
-  (key :string))
+(CFFI:DEFCFUN ("FreeImage_GetTagCount" FREEIMAGE-GETTAGCOUNT) :POINTER
+              (TAG :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetTagDescription" FreeImage_SetTagDescription) :pointer
-  (tag :pointer)
-  (description :string))
+(CFFI:DEFCFUN ("FreeImage_GetTagLength" FREEIMAGE-GETTAGLENGTH) :POINTER
+              (TAG :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetTagID" FreeImage_SetTagID) :pointer
-  (tag :pointer)
-  (id :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetTagValue" FREEIMAGE-GETTAGVALUE) :POINTER
+              (TAG :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetTagType" FreeImage_SetTagType) :pointer
-  (tag :pointer)
-  (type :int))
+(CFFI:DEFCFUN ("FreeImage_SetTagKey" FREEIMAGE-SETTAGKEY) :POINTER
+              (TAG :POINTER) (KEY :STRING)) 
 
-(cffi:defcfun ("FreeImage_SetTagCount" FreeImage_SetTagCount) :pointer
-  (tag :pointer)
-  (count :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetTagDescription" FREEIMAGE-SETTAGDESCRIPTION)
+              :POINTER (TAG :POINTER) (DESCRIPTION :STRING)) 
 
-(cffi:defcfun ("FreeImage_SetTagLength" FreeImage_SetTagLength) :pointer
-  (tag :pointer)
-  (length :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetTagID" FREEIMAGE-SETTAGID) :POINTER (TAG :POINTER)
+              (ID :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetTagValue" FreeImage_SetTagValue) :pointer
-  (tag :pointer)
-  (value :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetTagType" FREEIMAGE-SETTAGTYPE) :POINTER
+              (TAG :POINTER) (TYPE :INT)) 
 
-(cffi:defcfun ("FreeImage_FindFirstMetadata" FreeImage_FindFirstMetadata) :pointer
-  (model :int)
-  (dib :pointer)
-  (tag :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetTagCount" FREEIMAGE-SETTAGCOUNT) :POINTER
+              (TAG :POINTER) (COUNT :POINTER)) 
 
-(cffi:defcfun ("FreeImage_FindNextMetadata" FreeImage_FindNextMetadata) :pointer
-  (mdhandle :pointer)
-  (tag :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetTagLength" FREEIMAGE-SETTAGLENGTH) :POINTER
+              (TAG :POINTER) (LENGTH :POINTER)) 
 
-(cffi:defcfun ("FreeImage_FindCloseMetadata" FreeImage_FindCloseMetadata) :void
-  (mdhandle :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetTagValue" FREEIMAGE-SETTAGVALUE) :POINTER
+              (TAG :POINTER) (VALUE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetMetadata" FreeImage_SetMetadata) :pointer
-  (model :int)
-  (dib :pointer)
-  (key :string)
-  (tag :pointer))
+(CFFI:DEFCFUN ("FreeImage_FindFirstMetadata" FREEIMAGE-FINDFIRSTMETADATA)
+              :POINTER (MODEL :INT) (DIB :POINTER) (TAG :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetMetadata" FreeImage_GetMetadata) :pointer
-  (model :int)
-  (dib :pointer)
-  (key :string)
-  (tag :pointer))
+(CFFI:DEFCFUN ("FreeImage_FindNextMetadata" FREEIMAGE-FINDNEXTMETADATA)
+              :POINTER (MDHANDLE :POINTER) (TAG :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetMetadataCount" FreeImage_GetMetadataCount) :unsigned-int
-  (model :int)
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_FindCloseMetadata" FREEIMAGE-FINDCLOSEMETADATA) :VOID
+              (MDHANDLE :POINTER)) 
 
-(cffi:defcfun ("FreeImage_CloneMetadata" FreeImage_CloneMetadata) :pointer
-  (dst :pointer)
-  (src :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetMetadata" FREEIMAGE-SETMETADATA) :POINTER
+              (MODEL :INT) (DIB :POINTER) (KEY :STRING) (TAG :POINTER)) 
 
-(cffi:defcfun ("FreeImage_TagToString" FreeImage_TagToString) :string
-  (model :int)
-  (tag :pointer)
-  (Make :string))
+(CFFI:DEFCFUN ("FreeImage_GetMetadata" FREEIMAGE-GETMETADATA) :POINTER
+              (MODEL :INT) (DIB :POINTER) (KEY :STRING) (TAG :POINTER)) 
 
-(cffi:defcfun ("FreeImage_RotateClassic" FreeImage_RotateClassic) :pointer
-  (dib :pointer)
-  (angle :double))
+(CFFI:DEFCFUN ("FreeImage_GetMetadataCount" FREEIMAGE-GETMETADATACOUNT)
+              :UNSIGNED-INT (MODEL :INT) (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_Rotate" FreeImage_Rotate) :pointer
-  (dib :pointer)
-  (angle :double)
-  (bkcolor :pointer))
+(CFFI:DEFCFUN ("FreeImage_CloneMetadata" FREEIMAGE-CLONEMETADATA) :POINTER
+              (DST :POINTER) (SRC :POINTER)) 
 
-(cffi:defcfun ("FreeImage_RotateEx" FreeImage_RotateEx) :pointer
-  (dib :pointer)
-  (angle :double)
-  (x_shift :double)
-  (y_shift :double)
-  (x_origin :double)
-  (y_origin :double)
-  (use_mask :pointer))
+(CFFI:DEFCFUN ("FreeImage_TagToString" FREEIMAGE-TAGTOSTRING) :STRING
+              (MODEL :INT) (TAG :POINTER) (MAKE :STRING)) 
 
-(cffi:defcfun ("FreeImage_FlipHorizontal" FreeImage_FlipHorizontal) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_RotateClassic" FREEIMAGE-ROTATECLASSIC) :POINTER
+              (DIB :POINTER) (ANGLE :DOUBLE)) 
 
-(cffi:defcfun ("FreeImage_FlipVertical" FreeImage_FlipVertical) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_Rotate" FREEIMAGE-ROTATE) :POINTER (DIB :POINTER)
+              (ANGLE :DOUBLE) (BKCOLOR :POINTER)) 
 
-(cffi:defcfun ("FreeImage_JPEGTransform" FreeImage_JPEGTransform) :pointer
-  (src_file :string)
-  (dst_file :string)
-  (operation :int)
-  (perfect :pointer))
+(CFFI:DEFCFUN ("FreeImage_RotateEx" FREEIMAGE-ROTATEEX) :POINTER (DIB :POINTER)
+              (ANGLE :DOUBLE) (X_SHIFT :DOUBLE) (Y_SHIFT :DOUBLE)
+              (X_ORIGIN :DOUBLE) (Y_ORIGIN :DOUBLE) (USE_MASK :POINTER)) 
 
-(cffi:defcfun ("FreeImage_JPEGTransformU" FreeImage_JPEGTransformU) :pointer
-  (src_file :pointer)
-  (dst_file :pointer)
-  (operation :int)
-  (perfect :pointer))
+(CFFI:DEFCFUN ("FreeImage_FlipHorizontal" FREEIMAGE-FLIPHORIZONTAL) :POINTER
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_Rescale" FreeImage_Rescale) :pointer
-  (dib :pointer)
-  (dst_width :int)
-  (dst_height :int)
-  (filter :int))
+(CFFI:DEFCFUN ("FreeImage_FlipVertical" FREEIMAGE-FLIPVERTICAL) :POINTER
+              (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_MakeThumbnail" FreeImage_MakeThumbnail) :pointer
-  (dib :pointer)
-  (max_pixel_size :int)
-  (convert :pointer))
+(CFFI:DEFCFUN ("FreeImage_JPEGTransform" FREEIMAGE-JPEGTRANSFORM) :POINTER
+              (SRC_FILE :STRING) (DST_FILE :STRING) (OPERATION :INT)
+              (PERFECT :POINTER)) 
 
-(cffi:defcfun ("FreeImage_AdjustCurve" FreeImage_AdjustCurve) :pointer
-  (dib :pointer)
-  (LUT :pointer)
-  (channel :int))
+(CFFI:DEFCFUN ("FreeImage_JPEGTransformU" FREEIMAGE-JPEGTRANSFORMU) :POINTER
+              (SRC_FILE :POINTER) (DST_FILE :POINTER) (OPERATION :INT)
+              (PERFECT :POINTER)) 
 
-(cffi:defcfun ("FreeImage_AdjustGamma" FreeImage_AdjustGamma) :pointer
-  (dib :pointer)
-  (gamma :double))
+(CFFI:DEFCFUN ("FreeImage_Rescale" FREEIMAGE-RESCALE) :POINTER (DIB :POINTER)
+              (DST_WIDTH :INT) (DST_HEIGHT :INT) (FILTER :INT)) 
 
-(cffi:defcfun ("FreeImage_AdjustBrightness" FreeImage_AdjustBrightness) :pointer
-  (dib :pointer)
-  (percentage :double))
+(CFFI:DEFCFUN ("FreeImage_MakeThumbnail" FREEIMAGE-MAKETHUMBNAIL) :POINTER
+              (DIB :POINTER) (MAX_PIXEL_SIZE :INT) (CONVERT :POINTER)) 
 
-(cffi:defcfun ("FreeImage_AdjustContrast" FreeImage_AdjustContrast) :pointer
-  (dib :pointer)
-  (percentage :double))
+(CFFI:DEFCFUN ("FreeImage_AdjustCurve" FREEIMAGE-ADJUSTCURVE) :POINTER
+              (DIB :POINTER) (LUT :POINTER) (CHANNEL :INT)) 
 
-(cffi:defcfun ("FreeImage_Invert" FreeImage_Invert) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_AdjustGamma" FREEIMAGE-ADJUSTGAMMA) :POINTER
+              (DIB :POINTER) (GAMMA :DOUBLE)) 
 
-(cffi:defcfun ("FreeImage_GetHistogram" FreeImage_GetHistogram) :pointer
-  (dib :pointer)
-  (histo :pointer)
-  (channel :int))
+(CFFI:DEFCFUN ("FreeImage_AdjustBrightness" FREEIMAGE-ADJUSTBRIGHTNESS)
+              :POINTER (DIB :POINTER) (PERCENTAGE :DOUBLE)) 
 
-(cffi:defcfun ("FreeImage_GetAdjustColorsLookupTable" FreeImage_GetAdjustColorsLookupTable) :int
-  (LUT :pointer)
-  (brightness :double)
-  (contrast :double)
-  (gamma :double)
-  (invert :pointer))
+(CFFI:DEFCFUN ("FreeImage_AdjustContrast" FREEIMAGE-ADJUSTCONTRAST) :POINTER
+              (DIB :POINTER) (PERCENTAGE :DOUBLE)) 
 
-(cffi:defcfun ("FreeImage_AdjustColors" FreeImage_AdjustColors) :pointer
-  (dib :pointer)
-  (brightness :double)
-  (contrast :double)
-  (gamma :double)
-  (invert :pointer))
+(CFFI:DEFCFUN ("FreeImage_Invert" FREEIMAGE-INVERT) :POINTER (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ApplyColorMapping" FreeImage_ApplyColorMapping) :unsigned-int
-  (dib :pointer)
-  (srccolors :pointer)
-  (dstcolors :pointer)
-  (count :unsigned-int)
-  (ignore_alpha :pointer)
-  (swap :pointer))
+(CFFI:DEFCFUN ("FreeImage_GetHistogram" FREEIMAGE-GETHISTOGRAM) :POINTER
+              (DIB :POINTER) (HISTO :POINTER) (CHANNEL :INT)) 
 
-(cffi:defcfun ("FreeImage_SwapColors" FreeImage_SwapColors) :unsigned-int
-  (dib :pointer)
-  (color_a :pointer)
-  (color_b :pointer)
-  (ignore_alpha :pointer))
+(CFFI:DEFCFUN
+ ("FreeImage_GetAdjustColorsLookupTable" FREEIMAGE-GETADJUSTCOLORSLOOKUPTABLE)
+ :INT (LUT :POINTER) (BRIGHTNESS :DOUBLE) (CONTRAST :DOUBLE) (GAMMA :DOUBLE)
+ (INVERT :POINTER)) 
 
-(cffi:defcfun ("FreeImage_ApplyPaletteIndexMapping" FreeImage_ApplyPaletteIndexMapping) :unsigned-int
-  (dib :pointer)
-  (srcindices :pointer)
-  (dstindices :pointer)
-  (count :unsigned-int)
-  (swap :pointer))
+(CFFI:DEFCFUN ("FreeImage_AdjustColors" FREEIMAGE-ADJUSTCOLORS) :POINTER
+              (DIB :POINTER) (BRIGHTNESS :DOUBLE) (CONTRAST :DOUBLE)
+              (GAMMA :DOUBLE) (INVERT :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SwapPaletteIndices" FreeImage_SwapPaletteIndices) :unsigned-int
-  (dib :pointer)
-  (index_a :pointer)
-  (index_b :pointer))
+(CFFI:DEFCFUN ("FreeImage_ApplyColorMapping" FREEIMAGE-APPLYCOLORMAPPING)
+              :UNSIGNED-INT (DIB :POINTER) (SRCCOLORS :POINTER)
+              (DSTCOLORS :POINTER) (COUNT :UNSIGNED-INT)
+              (IGNORE_ALPHA :POINTER) (SWAP :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetChannel" FreeImage_GetChannel) :pointer
-  (dib :pointer)
-  (channel :int))
+(CFFI:DEFCFUN ("FreeImage_SwapColors" FREEIMAGE-SWAPCOLORS) :UNSIGNED-INT
+              (DIB :POINTER) (COLOR_A :POINTER) (COLOR_B :POINTER)
+              (IGNORE_ALPHA :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetChannel" FreeImage_SetChannel) :pointer
-  (dib :pointer)
-  (dib8 :pointer)
-  (channel :int))
+(CFFI:DEFCFUN
+ ("FreeImage_ApplyPaletteIndexMapping" FREEIMAGE-APPLYPALETTEINDEXMAPPING)
+ :UNSIGNED-INT (DIB :POINTER) (SRCINDICES :POINTER) (DSTINDICES :POINTER)
+ (COUNT :UNSIGNED-INT) (SWAP :POINTER)) 
 
-(cffi:defcfun ("FreeImage_GetComplexChannel" FreeImage_GetComplexChannel) :pointer
-  (src :pointer)
-  (channel :int))
+(CFFI:DEFCFUN ("FreeImage_SwapPaletteIndices" FREEIMAGE-SWAPPALETTEINDICES)
+              :UNSIGNED-INT (DIB :POINTER) (INDEX_A :POINTER)
+              (INDEX_B :POINTER)) 
 
-(cffi:defcfun ("FreeImage_SetComplexChannel" FreeImage_SetComplexChannel) :pointer
-  (dst :pointer)
-  (src :pointer)
-  (channel :int))
+(CFFI:DEFCFUN ("FreeImage_GetChannel" FREEIMAGE-GETCHANNEL) :POINTER
+              (DIB :POINTER) (CHANNEL :INT)) 
 
-(cffi:defcfun ("FreeImage_Copy" FreeImage_Copy) :pointer
-  (dib :pointer)
-  (left :int)
-  (top :int)
-  (right :int)
-  (bottom :int))
+(CFFI:DEFCFUN ("FreeImage_SetChannel" FREEIMAGE-SETCHANNEL) :POINTER
+              (DIB :POINTER) (DIB8 :POINTER) (CHANNEL :INT)) 
 
-(cffi:defcfun ("FreeImage_Paste" FreeImage_Paste) :pointer
-  (dst :pointer)
-  (src :pointer)
-  (left :int)
-  (top :int)
-  (alpha :int))
+(CFFI:DEFCFUN ("FreeImage_GetComplexChannel" FREEIMAGE-GETCOMPLEXCHANNEL)
+              :POINTER (SRC :POINTER) (CHANNEL :INT)) 
 
-(cffi:defcfun ("FreeImage_Composite" FreeImage_Composite) :pointer
-  (fg :pointer)
-  (useFileBkg :pointer)
-  (appBkColor :pointer)
-  (bg :pointer))
+(CFFI:DEFCFUN ("FreeImage_SetComplexChannel" FREEIMAGE-SETCOMPLEXCHANNEL)
+              :POINTER (DST :POINTER) (SRC :POINTER) (CHANNEL :INT)) 
 
-(cffi:defcfun ("FreeImage_JPEGCrop" FreeImage_JPEGCrop) :pointer
-  (src_file :string)
-  (dst_file :string)
-  (left :int)
-  (top :int)
-  (right :int)
-  (bottom :int))
+(CFFI:DEFCFUN ("FreeImage_Copy" FREEIMAGE-COPY) :POINTER (DIB :POINTER)
+              (LEFT :INT) (TOP :INT) (RIGHT :INT) (BOTTOM :INT)) 
 
-(cffi:defcfun ("FreeImage_JPEGCropU" FreeImage_JPEGCropU) :pointer
-  (src_file :pointer)
-  (dst_file :pointer)
-  (left :int)
-  (top :int)
-  (right :int)
-  (bottom :int))
+(CFFI:DEFCFUN ("FreeImage_Paste" FREEIMAGE-PASTE) :POINTER (DST :POINTER)
+              (SRC :POINTER) (LEFT :INT) (TOP :INT) (ALPHA :INT)) 
 
-(cffi:defcfun ("FreeImage_PreMultiplyWithAlpha" FreeImage_PreMultiplyWithAlpha) :pointer
-  (dib :pointer))
+(CFFI:DEFCFUN ("FreeImage_Composite" FREEIMAGE-COMPOSITE) :POINTER
+              (FG :POINTER) (USEFILEBKG :POINTER) (APPBKCOLOR :POINTER)
+              (BG :POINTER)) 
 
-(cffi:defcfun ("FreeImage_FillBackground" FreeImage_FillBackground) :pointer
-  (dib :pointer)
-  (color :pointer)
-  (options :int))
+(CFFI:DEFCFUN ("FreeImage_JPEGCrop" FREEIMAGE-JPEGCROP) :POINTER
+              (SRC_FILE :STRING) (DST_FILE :STRING) (LEFT :INT) (TOP :INT)
+              (RIGHT :INT) (BOTTOM :INT)) 
 
-(cffi:defcfun ("FreeImage_EnlargeCanvas" FreeImage_EnlargeCanvas) :pointer
-  (src :pointer)
-  (left :int)
-  (top :int)
-  (right :int)
-  (bottom :int)
-  (color :pointer)
-  (options :int))
+(CFFI:DEFCFUN ("FreeImage_JPEGCropU" FREEIMAGE-JPEGCROPU) :POINTER
+              (SRC_FILE :POINTER) (DST_FILE :POINTER) (LEFT :INT) (TOP :INT)
+              (RIGHT :INT) (BOTTOM :INT)) 
 
-(cffi:defcfun ("FreeImage_AllocateEx" FreeImage_AllocateEx) :pointer
-  (width :int)
-  (height :int)
-  (bpp :int)
-  (color :pointer)
-  (options :int)
-  (palette :pointer)
-  (red_mask :unsigned-int)
-  (green_mask :unsigned-int)
-  (blue_mask :unsigned-int))
+(CFFI:DEFCFUN ("FreeImage_PreMultiplyWithAlpha" FREEIMAGE-PREMULTIPLYWITHALPHA)
+              :POINTER (DIB :POINTER)) 
 
-(cffi:defcfun ("FreeImage_AllocateExT" FreeImage_AllocateExT) :pointer
-  (type :int)
-  (width :int)
-  (height :int)
-  (bpp :int)
-  (color :pointer)
-  (options :int)
-  (palette :pointer)
-  (red_mask :unsigned-int)
-  (green_mask :unsigned-int)
-  (blue_mask :unsigned-int))
+(CFFI:DEFCFUN ("FreeImage_FillBackground" FREEIMAGE-FILLBACKGROUND) :POINTER
+              (DIB :POINTER) (COLOR :POINTER) (OPTIONS :INT)) 
 
-(cffi:defcfun ("FreeImage_MultigridPoissonSolver" FreeImage_MultigridPoissonSolver) :pointer
-  (Laplacian :pointer)
-  (ncycle :int))
+(CFFI:DEFCFUN ("FreeImage_EnlargeCanvas" FREEIMAGE-ENLARGECANVAS) :POINTER
+              (SRC :POINTER) (LEFT :INT) (TOP :INT) (RIGHT :INT) (BOTTOM :INT)
+              (COLOR :POINTER) (OPTIONS :INT)) 
 
+(CFFI:DEFCFUN ("FreeImage_AllocateEx" FREEIMAGE-ALLOCATEEX) :POINTER
+              (WIDTH :INT) (HEIGHT :INT) (BPP :INT) (COLOR :POINTER)
+              (OPTIONS :INT) (PALETTE :POINTER) (RED_MASK :UNSIGNED-INT)
+              (GREEN_MASK :UNSIGNED-INT) (BLUE_MASK :UNSIGNED-INT)) 
 
-(defun get-32bit-dib (path)
-  (let* ((drawing-type (freeimage_getfiletype path 0))
-	 (image (freeimage_load drawing-type path 0))
-	 (image32 (freeimage_convertto32bits image))
-	 (freeimage_unload image))
-    image32))
+(CFFI:DEFCFUN ("FreeImage_AllocateExT" FREEIMAGE-ALLOCATEEXT) :POINTER
+              (TYPE :INT) (WIDTH :INT) (HEIGHT :INT) (BPP :INT)
+              (COLOR :POINTER) (OPTIONS :INT) (PALETTE :POINTER)
+              (RED_MASK :UNSIGNED-INT) (GREEN_MASK :UNSIGNED-INT)
+              (BLUE_MASK :UNSIGNED-INT)) 
 
-(defun unload-dib (bitmap)
-  (freeimage_unload bitmap))
+(CFFI:DEFCFUN
+ ("FreeImage_MultigridPoissonSolver" FREEIMAGE-MULTIGRIDPOISSONSOLVER) :POINTER
+ (LAPLACIAN :POINTER) (NCYCLE :INT)) 
 
+(DEFUN GET-32BIT-DIB (PATH)
+  (LET* ((DRAWING-TYPE (FREEIMAGE-GETFILETYPE PATH 0))
+         (IMAGE (FREEIMAGE-LOAD DRAWING-TYPE PATH 0))
+         (IMAGE32 (FREEIMAGE-CONVERTTO32BITS IMAGE))
+         (FREEIMAGE-UNLOAD IMAGE))
+    IMAGE32)) 
+
+(DEFUN UNLOAD-DIB (BITMAP) (FREEIMAGE-UNLOAD BITMAP)) 
