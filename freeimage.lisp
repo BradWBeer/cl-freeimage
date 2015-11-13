@@ -1,4 +1,4 @@
-(IN-PACKAGE #:FREEIMAGE) 
+(IN-PACKAGE #:CL-FREEIMAGE) 
 
 (DEFMACRO DEFANONENUM (&BODY ENUMS)
   "Converts anonymous enums to defconstants."
@@ -54,8 +54,6 @@
 (DEFCONSTANT FALSE 0) 
 
 (DEFCONSTANT TRUE 1) 
-
-(DEFCONSTANT NULL 0) 
 
 (DEFCONSTANT SEEK-SET 0) 
 
@@ -330,6 +328,15 @@
 
 (DEFCONSTANT FI-COLOR-PALETTE-SEARCH-MASK (LOGIOR 2 4)) 
 
+(cffi:defcenum free-image-filter
+  (:FILTER-BOX 0)
+  (:FILTER-BICUBIC 1)
+  (:FILTER-BILINEAR 2)
+  (:FILTER-BSPLINE 3)
+  (:FILTER-CATMULLROM 4)
+  (:FILTER-LANCZOS3 5))
+
+
 (CFFI:DEFCENUM FREE-IMAGE-FORMAT (:FIF-UNKNOWN -1) (:FIF-BMP 0) (:FIF-ICO 1)
                (:FIF-JPEG 2) (:FIF-JNG 3) (:FIF-KOALA 4) (:FIF-LBM 5)
                (:FIF-IFF 5) (:FIF-MNG 6) (:FIF-PBM 7) (:FIF-PBMRAW 8)
@@ -340,6 +347,23 @@
                (:FIF-GIF 25) (:FIF-HDR 26) (:FIF-FAXG3 27) (:FIF-SGI 28)
                (:FIF-EXR 29) (:FIF-J2K 30) (:FIF-JP2 31) (:FIF-PFM 32)
                (:FIF-PICT 33) (:FIF-RAW 34)) 
+
+(CFFI:DEFCENUM FREE-IMAGE-MDMODEL
+  (:FIMD-NODATA -1)
+  (:FIMD-COMMENTS 0)	;; single comment or keywords
+  (:FIMD-EXIF-MAIN 1)	;; Exif-TIFF metadata
+  (:FIMD-EXIF-EXIF 2)	;; Exif-specific metadata
+  (:FIMD-EXIF-GPS 3)	;; Exif GPS metadata
+  (:FIMD-EXIF-MAKERNOTE 4)	;; Exif maker note metadata
+  (:FIMD-EXIF-INTEROP 5)	;; Exif interoperability metadata
+  (:FIMD-IPTC 6)	;; IPTC/NAA metadata
+  (:FIMD-XMP 7)	;; Abobe XMP metadata
+  (:FIMD-GEOTIFF	 8)	;; GeoTIFF metadata
+  (:FIMD-ANIMATION  9)	;; Animation metadata
+  (:FIMD-CUSTOM	10)	;; Used to attach other metadata types to a dib
+  (:FIMD-EXIF-RAW  11))	;; Exif metadata as a raw buffer
+
+
 
 (CFFI:DEFCFUN ("FreeImage_Initialise" FREEIMAGE-INITIALISE) :VOID
               (LOAD_LOCAL_PLUGINS_ONLY :POINTER)) 
@@ -382,14 +406,14 @@
 (CFFI:DEFCFUN ("FreeImage_LoadFromHandle" FREEIMAGE-LOADFROMHANDLE) :POINTER
               (FIF :INT) (IO :POINTER) (HANDLE :POINTER) (FLAGS :INT)) 
 
-(CFFI:DEFCFUN ("FreeImage_Save" FREEIMAGE-SAVE) :POINTER (FIF :INT)
+(CFFI:DEFCFUN ("FreeImage_Save" FREEIMAGE-SAVE) :POINTER (FIF FREE-IMAGE-FORMAT)
               (DIB :POINTER) (FILENAME :STRING) (FLAGS :INT)) 
 
-(CFFI:DEFCFUN ("FreeImage_SaveU" FREEIMAGE-SAVEU) :POINTER (FIF :INT)
+(CFFI:DEFCFUN ("FreeImage_SaveU" FREEIMAGE-SAVEU) :POINTER (FIF FREE-IMAGE-FORMAT)
               (DIB :POINTER) (FILENAME :POINTER) (FLAGS :INT)) 
 
 (CFFI:DEFCFUN ("FreeImage_SaveToHandle" FREEIMAGE-SAVETOHANDLE) :POINTER
-              (FIF :INT) (DIB :POINTER) (IO :POINTER) (HANDLE :POINTER)
+              (FIF FREE-IMAGE-FORMAT) (DIB :POINTER) (IO :POINTER) (HANDLE :POINTER)
               (FLAGS :INT)) 
 
 (CFFI:DEFCFUN ("FreeImage_OpenMemory" FREEIMAGE-OPENMEMORY) :POINTER
@@ -487,8 +511,8 @@
  (FIF :INT)) 
 
 (CFFI:DEFCFUN ("FreeImage_OpenMultiBitmap" FREEIMAGE-OPENMULTIBITMAP) :POINTER
-              (FIF :INT) (FILENAME :STRING) (CREATE_NEW :POINTER)
-              (READ_ONLY :POINTER) (KEEP_CACHE_IN_MEMORY :POINTER) (FLAGS :INT)) 
+              (FIF :INT) (FILENAME :STRING) (CREATE_NEW :INT)
+              (READ_ONLY :INT) (KEEP_CACHE_IN_MEMORY :INT) (FLAGS :INT)) 
 
 (CFFI:DEFCFUN
  ("FreeImage_OpenMultiBitmapFromHandle" FREEIMAGE-OPENMULTIBITMAPFROMHANDLE)
@@ -978,7 +1002,7 @@
               (PERFECT :POINTER)) 
 
 (CFFI:DEFCFUN ("FreeImage_Rescale" FREEIMAGE-RESCALE) :POINTER (DIB :POINTER)
-              (DST_WIDTH :INT) (DST_HEIGHT :INT) (FILTER :INT)) 
+              (DST_WIDTH :INT) (DST_HEIGHT :INT) (FILTER free-image-filter)) 
 
 (CFFI:DEFCFUN ("FreeImage_MakeThumbnail" FREEIMAGE-MAKETHUMBNAIL) :POINTER
               (DIB :POINTER) (MAX_PIXEL_SIZE :INT) (CONVERT :POINTER)) 
@@ -1090,3 +1114,60 @@
     IMAGE32)) 
 
 (DEFUN UNLOAD-DIB (BITMAP) (FREEIMAGE-UNLOAD BITMAP)) 
+
+(defmacro with-loaded-32bit-map ((path &key width height bitvar widthvar heightvar) &body body)
+  (let ((dib (gensym))
+	(orig-w (if widthvar widthvar (gensym)))
+	(orig-h (if heightvar heightvar (gensym)))
+	(bits (if bitvar bitvar 'bits))
+	(user-w (gensym))
+	(user-h (gensym))
+	(new-dib (gensym)))
+    `(let* ((,user-w ,width)
+	    (,user-h ,height)
+	    (,dib (freeimage::get-32bit-dib ,path))
+	    (,orig-w (freeimage:freeimage-getwidth ,dib))
+	    (,orig-h (freeimage:freeimage-getheight ,dib))
+	    (,bits))
+
+       (if (or ,user-w ,user-h)
+	   (let* ((new-dib (freeimage:freeimage-rescale ,dib ,user-w ,user-h)))
+	     (freeimage:unload-dib ,dib)
+	     (setf ,dib ,new-dib)
+	     (setf ,orig-w ,user-w)
+	     (setf ,orig-h ,user-h)))
+       
+       (setf ,bits (freeimage::freeimage-getbits ,dib))
+       (freeimage:freeimage-flipvertical ,dib)
+       ,@body
+
+       (freeimage:unload-dib ,dib))))
+
+
+
+(defmacro with-loaded-32bit-map ((path &key width height bitvar widthvar heightvar) &body body)
+  (let ((dib (gensym))
+	(w   (or widthvar (gensym)))
+	(h   (or heightvar (gensym)))
+	(bits (or bitvar (gensym)))
+	(new-dib (gensym)))
+    
+    `(let ((,dib (freeimage::get-32bit-dib ,path)))
+       (unwind-protect
+	    (let ((,w (freeimage:freeimage-getwidth ,dib))
+		  (,h (freeimage:freeimage-getheight ,dib))
+		  (,bits))
+	      
+	      (when (or ,width ,height)
+		(let* ((,new-dib (freeimage:freeimage-rescale ,dib ,w ,h :FILTER-BILINEAR)))
+		  (freeimage:unload-dib ,dib)
+		  (setf ,dib ,new-dib)
+		  (when ,width (setf ,w ,width))
+		  (when ,height (setf ,h ,height))))
+
+	      (setf ,bits (freeimage::freeimage-getbits ,dib))
+	      (freeimage:freeimage-flipvertical ,dib)
+	      ,@body)
+	 (freeimage:unload-dib ,dib)))))
+
+		

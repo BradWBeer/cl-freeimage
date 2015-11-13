@@ -1,6 +1,7 @@
 (in-package :cl-user)
 
-(cl:defpackage #:FreeImage
+(cl:defpackage #:CL-FreeImage
+  (:nicknames :freeimage)
   (:use #:cl)
   (:export
    #:FREEIMAGE-MAJOR-VERSION
@@ -142,6 +143,7 @@
    #:FI-COLOR-FIND-EQUAL-COLOR
    #:FI-COLOR-ALPHA-IS-INDEX
    #:FI-COLOR-PALETTE-SEARCH-MASK
+   #:FREE-IMAGE-FILTER
    #:FREEIMAGE-INITIALISE
    #:FREEIMAGE-DEINITIALISE
    #:FREEIMAGE-GETVERSION
@@ -369,4 +371,5 @@
    #:FREEIMAGE-MULTIGRIDPOISSONSOLVER
    #:GET-32BIT-DIB
    #:UNLOAD-DIB
+   #:WITH-LOADED-32BIT-MAP
    ))
