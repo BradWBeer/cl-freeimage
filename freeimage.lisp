@@ -1,4 +1,4 @@
-(IN-PACKAGE #:CL-FREEIMAGE) 
+(IN-PACKAGE #:FREEIMAGE) 
 
 (DEFMACRO DEFANONENUM (&BODY ENUMS)
   "Converts anonymous enums to defconstants."
