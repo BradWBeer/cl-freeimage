@@ -1,4 +1,4 @@
-(asdf:defsystem #:freeimage
+(asdf:defsystem #:cl-freeimage
   :depends-on (cffi)
   :version "0.0.1"
   :serial t

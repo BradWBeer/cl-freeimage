@@ -1,4 +1,4 @@
-(in-package #:FreeImage)
+(in-package #:CL-FreeImage)
 
 (cffi:define-foreign-library :libFreeImage
   (cffi-features:darwin "libpango.dylib")

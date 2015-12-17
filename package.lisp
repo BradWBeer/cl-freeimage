@@ -1,7 +1,6 @@
-(in-package :cl-user)
-
-(cl:defpackage #:FreeImage
+(cl:defpackage #:CL-FreeImage
   (:use #:cl)
+  (:nicknames #:freeimage)
   (:export
    #:FREEIMAGE-MAJOR-VERSION
    #:FREEIMAGE-MINOR-VERSION
