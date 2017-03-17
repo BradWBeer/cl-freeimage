@@ -537,7 +537,7 @@
               (BITMAP :POINTER) (PAGE :INT)) 
 
 (CFFI:DEFCFUN ("FreeImage_UnlockPage" FREEIMAGE-UNLOCKPAGE) :VOID
-              (BITMAP :POINTER) (DATA :POINTER) (CHANGED :POINTER)) 
+              (BITMAP :POINTER) (DATA :POINTER) (CHANGED :int)) 
 
 (CFFI:DEFCFUN ("FreeImage_MovePage" FREEIMAGE-MOVEPAGE) :POINTER
               (BITMAP :POINTER) (TARGET :INT) (SOURCE :INT)) 
@@ -954,10 +954,10 @@
               (TAG :POINTER) (VALUE :POINTER)) 
 
 (CFFI:DEFCFUN ("FreeImage_FindFirstMetadata" FREEIMAGE-FINDFIRSTMETADATA)
-              :POINTER (MODEL :INT) (DIB :POINTER) (TAG :POINTER)) 
+              :POINTER (MODEL FREE-IMAGE-MDMODEL) (DIB :POINTER) (TAG :POINTER)) 
 
 (CFFI:DEFCFUN ("FreeImage_FindNextMetadata" FREEIMAGE-FINDNEXTMETADATA)
-              :POINTER (MDHANDLE :POINTER) (TAG :POINTER)) 
+              :int (MDHANDLE :POINTER) (TAG :POINTER)) 
 
 (CFFI:DEFCFUN ("FreeImage_FindCloseMetadata" FREEIMAGE-FINDCLOSEMETADATA) :VOID
               (MDHANDLE :POINTER)) 
@@ -1133,6 +1133,12 @@
 		  (,bits))
 	      
 	      (when (or ,mwidth ,mheight)
+		(unless ,mwidth
+		  (setf ,mwidth (round (* ,w (/ ,mheight ,h)))))
+
+		(unless ,mheight
+		  (setf ,mheight (round (* ,h (/ ,mwidth ,w)))))
+		
 		(let* ((,new-dib (freeimage:freeimage-rescale ,dib ,mwidth ,mheight :FILTER-BILINEAR)))
 		  (freeimage:unload-dib ,dib)
 		  (setf ,dib ,new-dib)
